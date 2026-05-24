@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- SEO Optimization -->
+    <title>Bogeyman: The Golfing Roguelike | Retro Arcade Golf</title>
+    <meta name="description" content="A 2D retro pixel art golf roguelike. Build an illegal club loadout, skim across water, bounce off arcade bumpers and chase the cut line across 8 pro tournaments!" />
+    <meta name="keywords" content="golf, roguelike, retro, pixel art, arcade, score builder, bogeyman, physics game" />
+  </head>
+  <body>
+    <!-- Background Cosmic Spiral Canvas -->
+    <canvas id="bg-spiral-canvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; background-color: #0c0813;"></canvas>
+
+    <!-- Main Cabinet Container wrapper -->
+    <main class="arcade-container" id="main-cabinet">
+      <!-- HUD and canvas dynamically mounted here -->
+      <div id="app-content" style="display: flex; flex-direction: inherit; width: 100%; gap: 16px;">
+        <!-- Left: Game Frame (Canvas & Overlays) -->
+        <div style="display: flex; flex-direction: column; align-items: center;">
+          <header class="arcade-header">
+            <h1 class="arcade-title" id="main-heading">BOGEYMAN</h1>
+            <div class="arcade-subtitle">The Golfing Roguelike</div>
+          </header>
+          
+          <div class="canvas-wrapper" id="game-canvas-container">
+            <!-- Canvas mounts here -->
+          </div>
+        </div>
+
+        <!-- Right: Control HUD -->
+        <div id="game-hud-container" style="display: flex; flex-direction: column;">
+          <!-- HUD Panel mounts here -->
+        </div>
+      </div>
+
+      <!-- Full-screen overlay screens (Title, Locker, Pro Shop, Game Over) -->
+      <div id="game-overlay-container" class="screen-overlay" style="display: none;">
+        <!-- Dynamic panels will load here -->
+      </div>
+    </main>
+
+    <!-- Floating Legend ? Button -->
+    <button id="btn-legend-toggle" class="legend-btn" title="Terrain Legend">?</button>
+
+    <!-- Legend Modal -->
+    <div id="legend-modal" class="legend-modal" style="display:none;">
+      <div class="legend-panel">
+        <div class="legend-title">TERRAIN LEGEND</div>
+        <div class="legend-grid">
+          <div class="legend-row">
+            <div class="legend-swatch" style="background:#2ecc71;"></div>
+            <div><div class="legend-name">TEE BOX</div><div class="legend-desc">Clean Lie (+50% Mult)</div></div>
+          </div>
+          <div class="legend-row">
+            <div class="legend-swatch" style="background:#27ae60;"></div>
+            <div><div class="legend-name">FAIRWAY</div><div class="legend-desc">Standard Lie (1.0x)</div></div>
+          </div>
+          <div class="legend-row">
+            <div class="legend-swatch" style="background:#1e3799;"></div>
+            <div><div class="legend-name">HEAVY ROUGH</div><div class="legend-desc">Choked Lie (0.5x)</div></div>
+          </div>
+          <div class="legend-row">
+            <div class="legend-swatch" style="background:#f5cd79;"></div>
+            <div><div class="legend-name">SAND BUNKER</div><div class="legend-desc">Buried Lie (0.3x)</div></div>
+          </div>
+          <div class="legend-row">
+            <div class="legend-swatch" style="background:#4a69bd;"></div>
+            <div><div class="legend-name">WATER HAZARD</div><div class="legend-desc">Sinks! (unless skimming fast)</div></div>
+          </div>
+          <div class="legend-row">
+            <div class="legend-swatch" style="background:#ffffff;"></div>
+            <div><div class="legend-name">THE CUP</div><div class="legend-desc">Goal — sink it!</div></div>
+          </div>
+          <div class="legend-row">
+            <div class="legend-swatch" style="background:#78e08f;"></div>
+            <div><div class="legend-name">GREEN</div><div class="legend-desc">Smooth Roll (1.2x)</div></div>
+          </div>
+          <div class="legend-row">
+            <div class="legend-swatch" style="background:#60a3bc;"></div>
+            <div><div class="legend-name">BOUNDARY WALL</div><div class="legend-desc">Bounces back (+0.5x Mult)</div></div>
+          </div>
+          <div class="legend-row">
+            <div class="legend-swatch" style="background:#e84118;"></div>
+            <div><div class="legend-name">ARCADE BUMPER</div><div class="legend-desc">+150 yds &amp; +0.5x Mult!</div></div>
+          </div>
+          <div class="legend-row">
+            <div class="legend-swatch" style="background:#82589f;"></div>
+            <div><div class="legend-name">MULT GATE</div><div class="legend-desc">Doubles shot multiplier!</div></div>
+          </div>
+          <div class="legend-row">
+            <div class="legend-swatch" style="background:#636e72;"></div>
+            <div><div class="legend-name">CURSED COBBLE</div><div class="legend-desc">Cursed stone (0.7x Lie)</div></div>
+          </div>
+          <div class="legend-row">
+            <div class="legend-swatch" style="background:#dfe6e9;"></div>
+            <div><div class="legend-name">BONE DUST</div><div class="legend-desc">Ashen powder (0.2x Lie!)</div></div>
+          </div>
+        </div>
+        <div style="text-align:center; margin-top: 1em;">
+          <button id="btn-legend-close" class="legend-close-btn">CLOSE</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating Settings Gear Button -->
+    <button id="btn-settings-toggle" class="settings-gear-btn" title="Open Settings">⚙</button>
+
+    <!-- Settings Overlay Modal -->
+    <div id="settings-modal" class="settings-modal" style="display: none;">
+      <div class="settings-modal-content">
+        <h2 class="settings-title">SETTINGS</h2>
+        
+        <!-- SFX Volume -->
+        <div class="settings-group">
+          <label for="modal-sfx-vol">SFX Volume:</label>
+          <input id="modal-sfx-vol" type="range" min="0" max="1" step="0.1" value="0.5" />
+        </div>
+        
+        <!-- Music Volume -->
+        <div class="settings-group">
+          <label for="modal-music-vol">Music Volume:</label>
+          <input id="modal-music-vol" type="range" min="0" max="1" step="0.1" value="0.5" />
+        </div>
+        
+        <!-- Soundtrack Selection -->
+        <div class="settings-group">
+          <label for="modal-bgm-track">Soundtrack:</label>
+          <select id="modal-bgm-track">
+            <option value="custom">Endless Fairway</option>
+            <option value="chiptune">Retro Overworld</option>
+          </select>
+        </div>
+        
+        <!-- Browser Fullscreen Button -->
+        <button id="btn-fullscreen-toggle" class="screen-btn" style="margin-top: 1em; padding: 0.5em 1.5em; font-size: 0.85em; width: 100%; background: #8e44ad; border-color: #7d3c98; border-bottom-color: #5b2c70; text-shadow: 1px 1px 0 #000;">TOGGLE FULLSCREEN BROWSER</button>
+        
+        <button id="btn-settings-close" class="screen-btn" style="margin-top: 1em; padding: 0.5em 1.5em; font-size: 0.9em; width: 100%;">CLOSE</button>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
