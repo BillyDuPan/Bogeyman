@@ -1,5 +1,5 @@
 import type { GameState, ClubModifier, SleeveModifier } from '../types/game';
-import { DRAFTABLE_CLUBS, DRAFTABLE_SLEEVES } from '../engine/DataEngine';
+import { DRAFTABLE_CLUBS, DRAFTABLE_SLEEVES } from '../config/items';
 import { TOURNAMENT_DATA } from '../config/terrain';
 
 export class ProShopDraft {
@@ -74,8 +74,8 @@ export class ProShopDraft {
         // 3. Add Mulligan recharge pack
         this.currentShopItems.push({
             id: 'refill_mulligan',
-            name: 'Mulligan Recharge',
-            description: '+1 Mulligan Charge to your total reserve.',
+            name: 'Mulligan Charge (+1)',
+            description: 'Rewind time to retry a shot. +1 Mulligan charge.',
             price: 35,
             type: 'mulligan',
             ref: null
@@ -85,8 +85,8 @@ export class ProShopDraft {
         if (this.currentShopItems.length < 4) {
             this.currentShopItems.push({
                 id: 'extra_stroke',
-                name: 'Emergency Shot Card',
-                description: '+1 stroke allowed in the next tournament.',
+                name: 'Extra Stroke (+1)',
+                description: 'Increase shot limit. +1 stroke allowed next tournament.',
                 price: 60,
                 type: 'stroke_boost',
                 ref: null

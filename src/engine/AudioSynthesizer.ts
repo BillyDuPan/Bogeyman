@@ -396,6 +396,51 @@ class AudioSynthesizer {
             osc2.stop(now + 0.3);
         } catch (e) {}
     }
+
+    playTalkBlip() {
+        try {
+            const ctx = this.getContext();
+            const now = ctx.currentTime;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            
+            // Retro speech voice pitch with slight variation
+            const pitch = 140 + Math.random() * 60;
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(pitch, now);
+            
+            gain.gain.setValueAtTime(0.06 * this.sfxVolume, now);
+            gain.gain.exponentialRampToValueAtTime(0.001 * this.sfxVolume, now + 0.05);
+            
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            
+            osc.start(now);
+            osc.stop(now + 0.05);
+        } catch (e) {}
+    }
+
+    playHoleInOneFanfare() {
+        try {
+            const ctx = this.getContext();
+            const now = ctx.currentTime;
+            const notes = [523.25, 659.25, 783.99, 1046.50, 783.99, 1046.50, 1318.51, 1567.98, 2093.00];
+            const vol = 0.18;
+            notes.forEach((freq, i) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = i % 2 === 0 ? 'square' : 'triangle';
+                osc.frequency.setValueAtTime(freq, now + i * 0.07);
+                gain.gain.setValueAtTime(vol * this.sfxVolume, now + i * 0.07);
+                gain.gain.exponentialRampToValueAtTime(0.001 * this.sfxVolume, now + i * 0.07 + 0.4);
+                
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now + i * 0.07);
+                osc.stop(now + i * 0.07 + 0.45);
+            });
+        } catch (e) {}
+    }
 }
 
 export const audio = new AudioSynthesizer();

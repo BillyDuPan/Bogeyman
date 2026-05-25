@@ -1,0 +1,149 @@
+/* ====================================================
+   TOUR RESULTS SCREEN (.tr-*)
+   ==================================================== */
+
+.tr-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.2em;
+    padding: 2em 1.5em;
+    backdrop-filter: blur(16px);
+    z-index: 200;
+    overflow-y: auto;
+}
+
+.tr-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.35em;
+}
+
+.tr-subtitle {
+    font-family: var(--font-arcade);
+    font-size: 0.67em;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+}
+
+.tr-title {
+    font-family: var(--font-arcade);
+    font-size: 1.6em;
+    color: #ffffff;
+    text-shadow: 3px 3px 0 #000;
+    opacity: 0;
+    transform: scale(0.7) translateY(-10px);
+}
+
+.tr-badge {
+    font-family: var(--font-arcade);
+    font-size: 1.15em;
+    letter-spacing: 0.04em;
+    opacity: 0;
+    transform: scale(0.5);
+    margin-top: 0.2em;
+}
+
+.tr-results-card {
+    width: 100%;
+    max-width: 420px;
+    background: rgba(15, 12, 24, 0.90);
+    border: 2px solid var(--border-neon);
+    padding: 1.2em 1.4em;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55em;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.5), 0 8px 32px rgba(0,0,0,0.5);
+}
+
+.tr-card-title {
+    font-family: var(--font-arcade);
+    font-size: 0.67em;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 0.12em;
+    text-align: center;
+    margin-bottom: 0.4em;
+}
+
+.tr-result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.45em 0.6em;
+    background: rgba(21, 19, 26, 0.95);
+    border: 3px solid;
+    border-color: #5a5766 #1a1822 #1a1822 #5a5766;
+    box-shadow: 2px 2px 0 0 #000;
+}
+
+.tr-result-row--dim {
+    opacity: 0;
+    transform: translateX(-14px);
+}
+
+.tr-row--visible {
+    animation: hcRowSlideIn 0.3s ease forwards;
+}
+
+.tr-payout-row {
+    background: rgba(241,196,15,0.06);
+    border-color: #ffe066 #b38f00 #b38f00 #ffe066 !important;
+    opacity: 0;
+    transform: translateX(-14px);
+}
+
+.tr-row-label {
+    font-family: var(--font-arcade);
+    font-size: 0.67em;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 0.06em;
+}
+
+.tr-row-val {
+    font-family: var(--font-arcade);
+    font-size: 0.88em;
+    text-align: right;
+}
+
+.tr-cash-val {
+    color: var(--color-gold);
+    text-shadow: 0 0 10px rgba(241,196,15,0.5);
+}
+
+.tr-season-complete {
+    max-width: 420px;
+    text-align: center;
+    padding: 1em 1.2em;
+    border: 1px solid var(--color-gold);
+    background: rgba(241,196,15,0.04);
+    opacity: 0;
+    transform: translateY(10px);
+}
+
+.tr-season-title {
+    font-family: var(--font-arcade);
+    font-size: 1.04em;
+    color: var(--color-gold);
+    text-shadow: 0 0 12px rgba(241,196,15,0.6);
+    margin-bottom: 0.5em;
+}
+
+.tr-season-desc {
+    font-family: var(--font-ui);
+    font-size: 0.85em;
+    color: rgba(255,255,255,0.65);
+    line-height: 1.5;
+}
+
+.tr-cta-btn {
+    min-width: 260px;
+    font-size: 0.93em;
+    padding: 0.9em 2em;
+    animation: none !important;
+}

@@ -1,0 +1,195 @@
+/* ====================================================
+   OVERLAYS — Shared screen wrappers & title screen
+   ==================================================== */
+
+/* Full Screen Overlay Panels */
+.screen-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(9, 7, 18, 0.72);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5em;
+    border-radius: 0.4em;
+    z-index: 100;
+    text-align: center;
+    overflow-y: auto;
+}
+
+/* Forces overlay to cover the full viewport (title / how-to screens) */
+.overlay-fullvp {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 1000;
+    background: transparent !important;
+}
+
+/* Title screen — transparent so spiral bg shows through */
+.title-overlay {
+    background: transparent;
+    justify-content: flex-end;
+    padding-bottom: 8%;
+}
+
+/* Logo on title screen */
+.title-logo {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 90%;
+    max-width: 760px;
+    pointer-events: none;
+    filter: drop-shadow(0 0 40px rgba(0,210,211,0.5));
+    animation: logoFloatCentered 4s ease-in-out infinite;
+}
+
+@keyframes logoFloatCentered {
+    0%   { transform: translate(-50%, -58%) translateY(0) rotate(-0.5deg); }
+    50%  { transform: translate(-50%, -58%) translateY(-0.8em) rotate(0.5deg); }
+    100% { transform: translate(-50%, -58%) translateY(0) rotate(-0.5deg); }
+}
+
+.screen-overlay h2 {
+    font-family: var(--font-arcade);
+    font-size: 1.76em;
+    margin-bottom: 0.8em;
+    color: var(--color-base);
+    text-shadow: 2px 2px 0px #000000;
+}
+
+.screen-text {
+    font-size: 0.88em;
+    margin-bottom: 1.2em;
+    color: rgba(255, 255, 255, 0.85);
+    max-width: 32em;
+    line-height: 1.6;
+}
+
+/* 3D Tactile Big Buttons */
+.screen-btn {
+    background: #00d2d3;
+    color: #000000;
+    border: 0.15em solid #007a7b;
+    border-bottom: 0.45em solid #004a4b;
+    border-radius: 0.3em;
+    padding: 0.8em 1.6em;
+    font-family: var(--font-arcade);
+    font-size: 0.88em;
+    cursor: pointer;
+    transition: transform 0.05s, border-bottom-width 0.05s;
+    text-shadow: none;
+}
+
+.screen-btn:hover {
+    background: #00e8e9;
+}
+
+.screen-btn:active {
+    transform: translateY(0.3em);
+    border-bottom-width: 0.15em;
+}
+
+/* Pro Shop Layout (legacy draft panel) */
+.shop-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.8em;
+    width: 100%;
+    max-width: 34em;
+    margin-bottom: 1.2em;
+}
+
+.shop-item {
+    background: rgba(21, 19, 26, 0.95);
+    border: 3px solid;
+    border-color: #5a5766 #1a1822 #1a1822 #5a5766;
+    box-shadow: 2px 2px 0 0 #000;
+    padding: 0.8em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.12s ease;
+}
+
+.shop-item:hover {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: #92eded #00a8a8 #00a8a8 #92eded;
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0 0 #000;
+}
+
+.shop-item-name {
+    font-size: 0.80em;
+    font-weight: 600;
+    margin-bottom: 0.4em;
+    color: #ffffff;
+    text-align: center;
+}
+
+.shop-item-desc {
+    font-size: 0.68em;
+    color: rgba(255, 255, 255, 0.7);
+    text-align: center;
+    margin-bottom: 0.6em;
+    height: 3.5em;
+    overflow: hidden;
+    line-height: 1.4;
+}
+
+.shop-item-price {
+    font-family: var(--font-arcade);
+    font-size: 0.52em;
+    color: var(--color-gold);
+    margin-bottom: 0.5em;
+    text-shadow: 1px 1px 0px #000000;
+}
+
+.shop-item-btn {
+    width: 100%;
+    background: #2d2a36;
+    border: 0.15em solid #1a1821;
+    border-bottom: 0.3em solid #100f14;
+    color: #ffffff;
+    font-family: var(--font-ui);
+    font-size: 0.65em;
+    font-weight: 600;
+    padding: 0.5em;
+    border-radius: 0.3em;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: transform 0.05s, border-bottom-width 0.05s;
+}
+
+.shop-item-btn:hover:not(:disabled) {
+    background: #3e3a4b;
+    border-color: var(--color-base);
+}
+
+.shop-item-btn:active:not(:disabled) {
+    transform: translateY(0.15em);
+    border-bottom-width: 0.15em;
+}
+
+.shop-item-btn:disabled {
+    opacity: 0.25;
+    cursor: not-allowed;
+    border-bottom-width: 0.15em;
+    transform: translateY(0.15em);
+}
+
+.shop-cash-indicator {
+    font-family: var(--font-arcade);
+    font-size: 0.6em;
+    color: var(--color-gold);
+    margin-bottom: 1em;
+    text-shadow: 1px 1px 0px #000000;
+}

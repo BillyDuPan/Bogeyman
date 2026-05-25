@@ -96,8 +96,14 @@ export class EvaluationEngine {
             const parDiff = scorecard.strokesTaken - scorecard.par;
             let parBonusMult = 1.0;
             let bonusName = 'Bogey';
+            let holeInOneCash = 0;
 
-            if (parDiff <= -2) {
+            if (scorecard.strokesTaken === 1) {
+                parBonusMult = 3.0;
+                bonusName = 'HOLE IN ONE!!!';
+                holeInOneCash = 100;
+                state.money += holeInOneCash;
+            } else if (parDiff <= -2) {
                 parBonusMult = 2.0;
                 bonusName = 'Eagle or Better (Albatross)';
             } else if (parDiff === -1) {
@@ -121,7 +127,11 @@ export class EvaluationEngine {
             const bonusDifference = scorecard.totalPoints - pointsBeforeBonus;
             state.cumulativeTournamentPoints += bonusDifference;
 
-            logText = `Sunk! ${bonusName} Bonus (${parBonusMult}x). Hole total: ${scorecard.totalPoints.toLocaleString()} pts!`;
+            if (scorecard.strokesTaken === 1) {
+                logText = `Sunk! HOLE IN ONE!!! 3.0x Bonus & +$100 cash! Hole total: ${scorecard.totalPoints.toLocaleString()} pts!`;
+            } else {
+                logText = `Sunk! ${bonusName} Bonus (${parBonusMult}x). Hole total: ${scorecard.totalPoints.toLocaleString()} pts!`;
+            }
         } else {
             // Ball did not sink. Check remaining strokes
             state.allowedStrokes--;

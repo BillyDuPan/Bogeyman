@@ -25,6 +25,8 @@ export class GameCanvas {
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
     private onLaunch: ((vel: Vector2D) => void) | null = null;
+    private onPlaceBlock: ((r: number, c: number) => void) | null = null;
+    private hoverCell: { r: number; c: number } | null = null;
 
     // Drag aiming variables
     private isDragging = false;
@@ -50,10 +52,15 @@ export class GameCanvas {
         this.ctx = this.canvas.getContext('2d')!;
     }
 
-    mount(parent: HTMLElement, onLaunch: (vel: Vector2D) => void) {
+    mount(
+        parent: HTMLElement,
+        onLaunch: (vel: Vector2D) => void,
+        onPlaceBlock: (r: number, c: number) => void
+    ) {
         parent.innerHTML = '';
         parent.appendChild(this.canvas);
         this.onLaunch = onLaunch;
+        this.onPlaceBlock = onPlaceBlock;
 
         // Setup interaction listeners
         this.canvas.addEventListener('mousedown', this.handleMouseDown.bind(this));
@@ -110,11 +117,18 @@ export class GameCanvas {
     }
 
     private handleMouseDown(e: MouseEvent) {
-        // Can only drag if game is ready
         const pos = this.getCanvasMousePos(e);
+
+        if (this.activeState && this.activeState.buildModeTileId !== null && this.activeState.gameMode === 'play') {
+            const gridX = Math.floor(pos.x / 32);
+            const gridY = Math.floor(pos.y / 32);
+            if (this.onPlaceBlock) {
+                this.onPlaceBlock(gridY, gridX);
+            }
+            return;
+        }
         
-        // Find if user clicked reasonably close to the ball
-        // Let's allow dragging anywhere on the screen if ball is at rest, for comfortable UX!
+        // Can only drag if game is ready
         if (this.isBallReadyToStrike()) {
             this.isDragging = true;
             this.dragStart = pos;
@@ -123,8 +137,21 @@ export class GameCanvas {
     }
 
     private handleMouseMove(e: MouseEvent) {
+        const pos = this.getCanvasMousePos(e);
+        if (this.activeState && this.activeState.buildModeTileId !== null && this.activeState.gameMode === 'play') {
+            const gridX = Math.floor(pos.x / 32);
+            const gridY = Math.floor(pos.y / 32);
+            if (gridX >= 0 && gridX < 16 && gridY >= 0 && gridY < 12) {
+                this.hoverCell = { r: gridY, c: gridX };
+            } else {
+                this.hoverCell = null;
+            }
+        } else {
+            this.hoverCell = null;
+        }
+
         if (!this.isDragging) return;
-        this.dragCurrent = this.getCanvasMousePos(e);
+        this.dragCurrent = pos;
     }
 
     private handleMouseUp(e: MouseEvent) {
@@ -186,11 +213,17 @@ export class GameCanvas {
         this.ctx.fillStyle = '#0f0c1b';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // 1. Draw Grid Map
-        // Let's reference maps directly from TOURNAMENT_DATA to render background tiles
-        const activeMapGrid = state.gameMode === 'play' && state.scorecardList[state.currentHoleIndex]
-            ? TOURNAMENT_DATA[state.currentTournamentIndex].holes[state.currentHoleIndex].map
-            : null;
+        // 1. Draw Grid Map (including custom placed blocks)
+        let activeMapGrid: number[][] | null = null;
+        if (state.gameMode === 'play' && state.scorecardList[state.currentHoleIndex]) {
+            const baseMap = TOURNAMENT_DATA[state.currentTournamentIndex].holes[state.currentHoleIndex].map;
+            activeMapGrid = baseMap.map(row => [...row]);
+            if (state.placedBlocks) {
+                for (const b of state.placedBlocks) {
+                    activeMapGrid[b.r][b.c] = b.tileId;
+                }
+            }
+        }
 
         if (activeMapGrid) {
             for (let r = 0; r < 12; r++) {
@@ -215,6 +248,58 @@ export class GameCanvas {
                     } else if (tileId === 9) { // Gate
                         this.drawGateGlow(c * 32 + 16, r * 32 + 16);
                     }
+                }
+            }
+        }
+
+        // 2.5. Draw Build Mode Hover Highlight & Preview
+        if (state.gameMode === 'play' && state.buildModeTileId !== null && this.hoverCell) {
+            const { r, c } = this.hoverCell;
+            const x = c * 32;
+            const y = r * 32;
+
+            const isAlreadyCustomBlock = state.placedBlocks && state.placedBlocks.some(b => b.r === r && b.c === c);
+
+            if (isAlreadyCustomBlock) {
+                // Show delete indicator
+                this.ctx.strokeStyle = 'rgba(235, 59, 90, 0.9)'; // Coral red glow
+                this.ctx.lineWidth = 2.5;
+                this.ctx.strokeRect(x, y, 32, 32);
+
+                this.ctx.strokeStyle = '#eb3b5a';
+                this.ctx.lineWidth = 3;
+                this.ctx.beginPath();
+                this.ctx.moveTo(x + 8, y + 8);
+                this.ctx.lineTo(x + 24, y + 24);
+                this.ctx.moveTo(x + 24, y + 8);
+                this.ctx.lineTo(x + 8, y + 24);
+                this.ctx.stroke();
+            } else if (state.blockInventory[state.buildModeTileId] > 0) {
+                // Check if placement is valid (e.g. not Tee, Cup, Wall, or Ball)
+                const baseMap = TOURNAMENT_DATA[state.currentTournamentIndex].holes[state.currentHoleIndex].map;
+                const baseTile = baseMap[r]?.[c];
+                const ballGridX = Math.floor(state.ball.pos.x / 32);
+                const ballGridY = Math.floor(state.ball.pos.y / 32);
+                const isValid = baseTile !== undefined && baseTile !== 0 && baseTile !== 5 && baseTile !== 7 && !(ballGridX === c && ballGridY === r);
+
+                if (isValid) {
+                    this.ctx.strokeStyle = 'rgba(46, 204, 113, 0.8)'; // green outline
+                    this.ctx.lineWidth = 2.0;
+                    this.ctx.strokeRect(x, y, 32, 32);
+
+                    this.ctx.save();
+                    this.ctx.globalAlpha = 0.55;
+                    this.drawTile(x, y, state.buildModeTileId);
+                    if (state.buildModeTileId === 8) {
+                        this.drawBumperGlow(x + 16, y + 16);
+                    } else if (state.buildModeTileId === 9) {
+                        this.drawGateGlow(x + 16, y + 16);
+                    }
+                    this.ctx.restore();
+                } else {
+                    this.ctx.strokeStyle = 'rgba(235, 59, 90, 0.5)'; // red invalid outline
+                    this.ctx.lineWidth = 1.5;
+                    this.ctx.strokeRect(x, y, 32, 32);
                 }
             }
         }

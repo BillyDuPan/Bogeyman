@@ -1,0 +1,282 @@
+/* Wind UI Overlay */
+.wind-indicator {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid var(--border-steel);
+    border-radius: 4px;
+    padding: 4px 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.5em;
+    color: #ffffff;
+    pointer-events: none;
+}
+
+/* Debug panel */
+.debug-overlay {
+    position: absolute;
+    bottom: 72px;
+    left: 16px;
+    background: rgba(0, 0, 0, 0.95);
+    border: 2px solid var(--color-danger);
+    border-radius: 4px;
+    padding: 8px;
+    font-family: monospace;
+    font-size: 9px;
+    color: var(--color-danger);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+.debug-title {
+    font-weight: bold;
+    text-align: center;
+    border-bottom: 2px solid rgba(192, 41, 43, 0.4);
+    padding-bottom: 4px;
+    font-family: var(--font-arcade);
+    font-size: 0.65em;
+}
+
+.debug-btn {
+    background: #c0392b;
+    border: 1px solid #7f0f0d;
+    border-bottom: 3px solid #540605;
+    border-radius: 2px;
+    color: white;
+    padding: 4px 6px;
+    cursor: pointer;
+    font-family: monospace;
+    font-size: 9px;
+    transition: transform 0.05s, border-bottom-width 0.05s;
+}
+
+.debug-btn:active {
+    transform: translateY(2px);
+    border-bottom-width: 1px;
+}
+
+/* Settings Gear Floating Button styling */
+.settings-gear-btn {
+    position: fixed;
+    bottom: 16px;
+    left: 16px;
+    width: 44px;
+    height: 44px;
+    background: #2d2a36;
+    border: 3px solid #747d8c;
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 0px #1a1822, 0 6px 10px rgba(0,0,0,0.5);
+    transition: transform 0.1s ease, background-color 0.2s ease;
+    outline: none;
+}
+
+.settings-gear-btn:hover {
+    background: #3e3b4a;
+    transform: translateY(-2px);
+}
+
+.settings-gear-btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0px #1a1822, 0 2px 5px rgba(0,0,0,0.5);
+}
+
+/* Settings Modal styling */
+.settings-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(12, 8, 19, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    backdrop-filter: blur(12px);
+}
+
+.settings-modal-content {
+    background: rgba(21, 19, 26, 0.9);
+    border: 0.3em solid var(--border-steel);
+    border-radius: 0.6em;
+    padding: 1.5em;
+    width: 90%;
+    max-width: 340px;
+    box-shadow: var(--cabinet-shadow);
+    text-align: center;
+    font-family: var(--font-ui);
+    color: #ffffff;
+    box-sizing: border-box;
+    backdrop-filter: blur(12px);
+}
+
+.settings-title {
+    font-family: var(--font-arcade);
+    font-size: 1.44em;
+    color: var(--color-base);
+    text-shadow: 2px 2px 0px #000000;
+    margin-top: 0;
+    margin-bottom: 1.2em;
+}
+
+.settings-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1em;
+    font-size: 0.78em;
+    gap: 8px;
+}
+
+.settings-group label {
+    text-align: left;
+}
+
+.settings-group select, .settings-group input[type="range"] {
+    background: #15131a;
+    color: #ffffff;
+    border: 2px solid var(--border-steel);
+    padding: 4px;
+    border-radius: 4px;
+    font-family: var(--font-ui);
+    font-size: 1.0em;
+    width: 140px;
+    box-sizing: border-box;
+}
+
+.settings-group input[type="range"] {
+    cursor: pointer;
+    accent-color: var(--color-base);
+    padding: 0;
+    height: 8px;
+}
+
+/* Legend ? Button */
+.legend-btn {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    width: 44px;
+    height: 44px;
+    background: #2d2a36;
+    border: 3px solid #747d8c;
+    border-radius: 8px;
+    color: #ffffff;
+    font-family: var(--font-arcade);
+    font-size: 18px;
+    cursor: pointer;
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 0px #1a1822, 0 6px 10px rgba(0,0,0,0.5);
+    transition: transform 0.1s ease, background-color 0.2s ease;
+    outline: none;
+}
+.legend-btn:hover  { background: #3e3b4a; transform: translateY(-2px); }
+.legend-btn:active { transform: translateY(2px); box-shadow: 0 1px 0px #1a1822; }
+
+/* Legend Modal */
+.legend-modal {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(12,8,19,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    backdrop-filter: blur(12px);
+}
+
+.legend-panel {
+    background: rgba(21,19,26,0.97);
+    border: 2px solid var(--border-steel);
+    border-radius: 10px;
+    padding: clamp(14px, 3vw, 28px) clamp(16px, 3.5vw, 32px);
+    width: min(92vw, 640px);
+    max-height: 88vh;
+    overflow-y: auto;
+    box-shadow: var(--cabinet-shadow);
+    box-sizing: border-box;
+}
+
+.legend-title {
+    font-family: var(--font-arcade);
+    font-size: clamp(18px, 3vw, 28px);
+    color: var(--color-base);
+    letter-spacing: 0.1em;
+    text-align: center;
+    margin-bottom: clamp(10px, 2vw, 18px);
+    text-shadow: 0 0 12px rgba(0,210,211,0.4);
+}
+
+.legend-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(8px, 1.5vw, 14px) clamp(10px, 2vw, 20px);
+}
+
+.legend-row {
+    display: flex;
+    align-items: flex-start;
+    gap: clamp(8px, 1.2vw, 12px);
+}
+
+.legend-swatch {
+    flex-shrink: 0;
+    width: clamp(20px, 2.5vw, 28px);
+    height: clamp(20px, 2.5vw, 28px);
+    border-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.2);
+    margin-top: 2px;
+}
+
+.legend-text { display: flex; flex-direction: column; gap: 2px; }
+
+.legend-name {
+    font-family: var(--font-arcade);
+    font-size: clamp(14px, 1.8vw, 20px);
+    color: #ffffff;
+    line-height: 1.2;
+}
+
+.legend-desc {
+    font-family: var(--font-ui);
+    font-size: clamp(11px, 1.3vw, 15px);
+    color: rgba(255,255,255,0.55);
+    line-height: 1.3;
+}
+
+.legend-close-row {
+    margin-top: 1em;
+    display: flex;
+    justify-content: center;
+}
+
+.legend-close-btn {
+    font-family: var(--font-arcade);
+    font-size: clamp(14px, 1.8vw, 18px);
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border-steel);
+    border-bottom: 3px solid rgba(0,0,0,0.4);
+    color: rgba(255,255,255,0.7);
+    padding: 0.5em 2em;
+    cursor: pointer;
+    letter-spacing: 0.06em;
+    transition: background 0.1s;
+}
+.legend-close-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }

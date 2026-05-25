@@ -1,0 +1,303 @@
+/* ====================================================
+   HOLE COMPLETE — Cinematic Animated Score Screen
+   ==================================================== */
+
+/* Full-page overlay wrapper */
+.hc-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55em;
+    padding: 0.8em 1.2em;
+    background: radial-gradient(ellipse at 50% 0%, rgba(243,156,18,0.08) 0%, rgba(12,8,20,0.98) 60%);
+    backdrop-filter: blur(16px);
+    z-index: 200;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+/* Header block */
+.hc-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15em;
+    text-align: center;
+}
+
+.hc-subtitle {
+    font-family: var(--font-arcade);
+    font-size: 0.77em;
+    color: rgba(255,255,255,0.45);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.hc-title {
+    font-family: var(--font-arcade);
+    font-size: 1.35em;
+    letter-spacing: -0.02em;
+    text-shadow: 3px 3px 0 #000, 0 0 24px currentColor;
+    opacity: 0;
+    transform: scale(0.7) translateY(-10px);
+    transition: none;
+}
+
+.hc-title--success { color: #2ecc71; }
+.hc-title--fail    { color: var(--color-danger); }
+
+.hc-title--pop {
+    animation: hcTitlePop 0.55s cubic-bezier(0.175,0.885,0.32,1.375) forwards;
+}
+
+@keyframes hcTitlePop {
+    0%   { opacity: 0; transform: scale(0.6) translateY(-14px); }
+    60%  { opacity: 1; transform: scale(1.08) translateY(2px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Par badge (Eagle/Birdie/Par/Bogey label) */
+.hc-par-badge {
+    font-family: var(--font-arcade);
+    font-size: 0.9em;
+    letter-spacing: 0.05em;
+    margin-top: 0.1em;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: none;
+}
+
+.hc-badge--visible {
+    animation: hcBadgePop 0.6s cubic-bezier(0.175,0.885,0.32,1.375) forwards;
+}
+
+@keyframes hcBadgePop {
+    0%   { opacity: 0; transform: scale(0.4); }
+    65%  { opacity: 1; transform: scale(1.15); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+/* Scorecard panel */
+.hc-scorecard {
+    width: min(88vw, 500px);
+    background: rgba(15, 12, 24, 0.88);
+    border: 2px solid var(--border-neon);
+    padding: 0.65em 1em;
+    display: flex;
+    flex-direction: column;
+    gap: 0.28em;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.6), 0 8px 32px rgba(0,0,0,0.6);
+    image-rendering: pixelated;
+}
+
+.hc-scorecard-title {
+    font-family: var(--font-arcade);
+    font-size: 0.74em;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 0.1em;
+    text-align: center;
+    margin-bottom: 0.3em;
+}
+
+/* Individual shot rows */
+.hc-stroke-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.3em 0.6em;
+    background: rgba(21, 19, 26, 0.95);
+    border: 3px solid;
+    border-color: #5a5766 #1a1822 #1a1822 #5a5766;
+    box-shadow: 2px 2px 0 0 #000;
+    opacity: 0;
+    transform: translateX(-18px);
+    transition: none;
+}
+
+.hc-row--visible {
+    animation: hcRowSlideIn 0.28s cubic-bezier(0.22,0.61,0.36,1) forwards;
+}
+
+@keyframes hcRowSlideIn {
+    0%   { opacity: 0; transform: translateX(-18px); }
+    100% { opacity: 1; transform: translateX(0); }
+}
+
+.hc-stroke-label {
+    font-family: var(--font-arcade);
+    font-size: 0.70em;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 0.06em;
+}
+
+.hc-stroke-pts {
+    font-family: var(--font-arcade);
+    font-size: 0.83em;
+    color: var(--color-base);
+    min-width: 6em;
+    text-align: right;
+    transition: color 0.1s;
+}
+
+/* Par bonus row */
+.hc-bonus-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.35em 0.6em;
+    background: rgba(243,156,18,0.08);
+    border: 3px solid;
+    border-color: #ffe066 #b38f00 #b38f00 #ffe066;
+    box-shadow: 2px 2px 0 0 #000;
+    margin-top: 0.35em;
+    opacity: 0;
+    transform: scaleX(0.75);
+    transform-origin: left center;
+}
+
+.hc-bonus-row.hc-row--visible {
+    animation: hcBonusReveal 0.4s cubic-bezier(0.22,0.61,0.36,1) forwards;
+}
+
+@keyframes hcBonusReveal {
+    0%   { opacity: 0; transform: scaleX(0.75); }
+    100% { opacity: 1; transform: scaleX(1); }
+}
+
+.hc-bonus-label {
+    font-family: var(--font-arcade);
+    font-size: 0.74em;
+    color: rgba(255,255,255,0.6);
+    letter-spacing: 0.05em;
+}
+
+.hc-bonus-mult {
+    font-family: var(--font-arcade);
+    font-size: 1.12em;
+    font-weight: bold;
+}
+
+/* Divider line */
+.hc-divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--border-neon), transparent);
+    margin: 0.2em 0;
+}
+
+/* Total row */
+.hc-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.25em 0.5em 0;
+}
+
+.hc-total-label {
+    font-family: var(--font-arcade);
+    font-size: 0.77em;
+    color: rgba(255,255,255,0.7);
+    letter-spacing: 0.05em;
+}
+
+.hc-total-pts {
+    font-family: var(--font-arcade);
+    font-size: 1.25em;
+    color: var(--color-gold);
+    text-shadow: 0 0 10px rgba(241,196,15,0.5);
+    transition: color 0.1s;
+}
+
+/* Tournament running total row */
+.hc-tourney-row {
+    display: flex;
+    gap: 1em;
+    align-items: center;
+    justify-content: center;
+    padding: 0.35em 1.2em;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border-steel);
+    opacity: 0;
+}
+
+.hc-tourney-row.hc-row--visible {
+    animation: hcRowSlideIn 0.35s ease forwards;
+}
+
+.hc-tourney-label {
+    font-family: var(--font-arcade);
+    font-size: 0.67em;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 0.08em;
+}
+
+.hc-tourney-pts {
+    font-family: var(--font-arcade);
+    font-size: 0.88em;
+    color: var(--color-base);
+}
+
+/* Continue button */
+.hc-cta-btn {
+    opacity: 0;
+    transform: translateY(16px);
+    pointer-events: none;
+    min-width: 240px;
+    font-size: 0.93em;
+    padding: 0.9em 2em;
+    animation: none !important;
+}
+
+.hc-cta-btn.hc-cta--visible {
+    animation: hcCtaReveal 0.45s cubic-bezier(0.175,0.885,0.32,1.375) forwards !important;
+    pointer-events: auto;
+}
+
+@keyframes hcCtaReveal {
+    0%   { opacity: 0; transform: translateY(16px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Hole Complete Confetti & Hole In One Celebrations */
+@keyframes confettiFall {
+    0%   { transform: translateY(-50px) rotate(0deg) scale(1); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg) scale(0.5); opacity: 0; }
+}
+
+.confetti-particle {
+    position: absolute;
+    top: -20px;
+    opacity: 0.85;
+    z-index: 9999;
+    pointer-events: none;
+    animation: confettiFall 3s linear forwards;
+}
+
+@keyframes holeInOnePulse {
+    0%   { opacity: 1; transform: scale(1) rotate(-1deg); filter: drop-shadow(0 0 10px rgba(241,196,15,0.8)); }
+    50%  { opacity: 1; transform: scale(1.15) rotate(1deg); filter: drop-shadow(0 0 25px rgba(241,196,15,1)) brightness(1.2); }
+    100% { opacity: 1; transform: scale(1) rotate(-1deg); filter: drop-shadow(0 0 10px rgba(241,196,15,0.8)); }
+}
+
+.hole-in-one-celebrate {
+    animation: holeInOnePulse 1.2s infinite ease-in-out !important;
+    font-size: 1.25em !important;
+}
+
+/* Text Spark Particle Explosions */
+@keyframes textSparkAnim {
+    0%   { transform: translate(-50%, -50%) translate(0, 0) scale(1.3); opacity: 1; }
+    100% { transform: translate(-50%, -50%) translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+}
+
+.text-spark {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 10000;
+    animation: textSparkAnim 0.7s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+}

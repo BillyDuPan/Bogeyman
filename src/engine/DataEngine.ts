@@ -1,198 +1,7 @@
 import type { GameState, ClubModifier, SleeveModifier, HoleScorecard, Vector2D, ShopDraftItem, TournamentResult } from '../types/game';
 import { TOURNAMENT_DATA } from '../config/terrain';
 import { audio } from './AudioSynthesizer';
-
-// Base Starting Clubs (Cursed hand-me-downs from fallen golfers)
-export const DEFAULT_CLUBS: ClubModifier[] = [
-    {
-        id: 'std_driver',
-        name: 'Rattled 1-Wood',
-        description: 'Rattled from a forgotten attic. 2.0x Power.',
-        clubType: 'Driver',
-        powerScalar: 2.0,
-        cost: 0
-    },
-    {
-        id: 'std_5iron',
-        name: 'Haunted Long-Iron',
-        description: 'Hums on the backswing. 1.3x Power.',
-        clubType: 'Iron',
-        powerScalar: 1.3,
-        cost: 0
-    },
-    {
-        id: 'std_9iron',
-        name: 'Banshee 9-Iron',
-        description: 'Screams at impact. 1.1x Power.',
-        clubType: 'Iron',
-        powerScalar: 1.1,
-        cost: 0
-    },
-    {
-        id: 'std_wedge',
-        name: 'Crypt Wedge',
-        description: 'Chipped from old gravestones. 1.0x Power.',
-        clubType: 'Wedge',
-        powerScalar: 1.0,
-        cost: 0
-    },
-    {
-        id: 'std_putter',
-        name: 'Grave Roller',
-        description: 'Glides over haunted greens. 0.8x Power. (Green Only)',
-        clubType: 'Putter',
-        powerScalar: 0.8,
-        cost: 0
-    }
-];
-
-// Cursed Relic Clubs (unearthed from the Bogeyman's course)
-export const DRAFTABLE_CLUBS: ClubModifier[] = [
-    {
-        id: 'illegal_1iron',
-        name: 'Cursed 1-Iron',
-        description: 'Cursed for raw power: 2.5x! Wall bounces drain the curse — resets mult to 1.0x.',
-        clubType: 'Iron',
-        powerScalar: 2.5,
-        cost: 120
-    },
-    {
-        id: 'sand_wedge_60',
-        name: 'Ectoplasm Wedge',
-        description: 'Ecto-coated face. Bunker ecto counts as 5.0x lie (vs. 0.3x).',
-        clubType: 'Wedge',
-        powerScalar: 0.9,
-        cost: 85
-    },
-    {
-        id: 'beryllium_putter',
-        name: 'Skull-Cage Putter',
-        description: 'Green only. Skull bounces add +100 yards base.',
-        clubType: 'Putter',
-        powerScalar: 0.8,
-        cost: 100
-    },
-    {
-        id: 'titanium_driver',
-        name: "Reaper's Driver",
-        description: "The Reaper's reach: 2.3x Power. +100 yards on the Tee Box.",
-        clubType: 'Driver',
-        powerScalar: 2.3,
-        cost: 130
-    },
-    {
-        id: 'golden_putter',
-        name: 'Gilded Skull Putter',
-        description: "Green only. Doubles this shot's final curse score.",
-        clubType: 'Putter',
-        powerScalar: 0.7,
-        cost: 140
-    },
-    {
-        id: 'heavy_hybrid',
-        name: 'Gravedigger Hybrid',
-        description: '1.5x Power. Cuts through rough like fresh earth. Rough lie = 1.0x.',
-        clubType: 'Iron',
-        powerScalar: 1.5,
-        cost: 110
-    },
-    {
-        id: 'trick_wedge',
-        name: 'Hex Wedge',
-        description: '1.0x Power. Each wall bounce casts +1.0x (vs. +0.5x).',
-        clubType: 'Wedge',
-        powerScalar: 1.0,
-        cost: 95
-    }
-];
-
-// Consumable & special items available in the shop pool
-const SHOP_CONSUMABLE_POOL: Array<Omit<ShopDraftItem, 'ref'>> = [
-    {
-        id: 'refill_mulligan',
-        name: 'Soul Rewind',
-        description: 'Reclaim one cursed shot from the void. +1 Spirit Charge.',
-        price: 35,
-        type: 'mulligan',
-        amount: 1
-    },
-    {
-        id: 'ectoplasm_flask',
-        name: 'Ectoplasm Flask',
-        description: 'Double your safety net. +2 Spirit Charges for the next round.',
-        price: 70,
-        type: 'mulligan',
-        amount: 2
-    },
-    {
-        id: 'extra_stroke',
-        name: 'Phantom Stroke',
-        description: 'Conjure one extra stroke from thin air for the next haunt.',
-        price: 60,
-        type: 'stroke_boost',
-        amount: 1
-    },
-    {
-        id: 'bone_cache',
-        name: 'Bone Cache',
-        description: 'Unearth 3 extra strokes pre-loaded across the next tournament.',
-        price: 115,
-        type: 'stroke_boost',
-        amount: 3
-    },
-    {
-        id: 'soul_vault',
-        name: 'Soul Vault',
-        description: 'Convert $40 of cursed gold into $100. Guaranteed net +$60.',
-        price: 40,
-        type: 'cash_boost',
-        amount: 100
-    },
-    {
-        id: 'reapers_wager',
-        name: "Reaper's Wager",
-        description: 'Pay $20. The Reaper flips: 50% → collect $200. 50% → the Reaper keeps it.',
-        price: 20,
-        type: 'gamble',
-        amount: 200
-    },
-];
-
-// Spirit Ball Sleeves (vessels of supernatural energy)
-export const DRAFTABLE_SLEEVES: SleeveModifier[] = [
-    {
-        id: 'std_sleeve',
-        name: 'Hollow Dimple',
-        description: 'Standard hollow-core spirit ball. 0.85 elasticity.',
-        elasticity: 0.85,
-        windImmunity: false,
-        cost: 0
-    },
-    {
-        id: 'balata_sleeve',
-        name: 'Bound Wraith Balata',
-        description: 'A bound spirit compressed inside. Elasticity 0.96.',
-        elasticity: 0.96,
-        windImmunity: false,
-        cost: 110
-    },
-    {
-        id: 'lowspin_sleeve',
-        name: 'Phantom Shell',
-        description: 'Passes through the wind unseen. Immune to wind drift.',
-        elasticity: 0.85,
-        windImmunity: true,
-        cost: 100
-    },
-    {
-        id: 'super_bouncer',
-        name: 'Poltergeist Core',
-        description: 'Chaotic bouncing spirit within. Elasticity 0.98.',
-        elasticity: 0.98,
-        windImmunity: false,
-        cost: 140
-    }
-];
+import { DEFAULT_CLUBS, DRAFTABLE_CLUBS, DRAFTABLE_SLEEVES, SHOP_CONSUMABLE_POOL, DRAFTABLE_BLOCKS } from '../config/items';
 
 export class DataEngine {
     private state!: GameState;
@@ -234,7 +43,11 @@ export class DataEngine {
             tournamentResults: [],
             pendingExtraStrokes: 0,
             shopRerollsLeft: 2,
-            lastGambleResult: null
+            lastGambleResult: null,
+            shopCollapsed: false,
+            blockInventory: {},
+            placedBlocks: [],
+            buildModeTileId: null
         };
     }
 
@@ -316,8 +129,20 @@ export class DataEngine {
             items.push({ id: sleeve.id, name: sleeve.name, description: sleeve.description, price: sleeve.cost, type: 'sleeve', ref: sleeve });
         });
 
-        // 3 random consumables from pool
-        [...SHOP_CONSUMABLE_POOL].sort(() => 0.5 - Math.random()).slice(0, 3).forEach(cons => {
+        // Up to 2 random blocks
+        [...DRAFTABLE_BLOCKS].sort(() => 0.5 - Math.random()).slice(0, 2).forEach(block => {
+            items.push({
+                id: `block_${block.tileId}`,
+                name: block.name,
+                description: block.description,
+                price: block.cost,
+                type: 'block',
+                ref: block
+            });
+        });
+
+        // 2 random consumables from pool
+        [...SHOP_CONSUMABLE_POOL].sort(() => 0.5 - Math.random()).slice(0, 2).forEach(cons => {
             items.push({ ...cons, ref: null });
         });
 
@@ -383,6 +208,10 @@ export class DataEngine {
         this.state.mulliganHistory = [];
         this.state.ball.vel = { x: 0, y: 0 };
         this.state.ball.isMoving = false;
+
+        // Reclaim placed blocks back to block inventory
+        this.reclaimAllPlacedBlocks();
+        this.state.buildModeTileId = null;
 
         // Find Tee Box (tile 0) in the current map grid to place the ball
         const mapGrid = TOURNAMENT_DATA[this.state.currentTournamentIndex].holes[holeIndex].map;
@@ -456,7 +285,9 @@ export class DataEngine {
 
         const gridX = Math.floor(this.state.ball.pos.x / 32);
         const gridY = Math.floor(this.state.ball.pos.y / 32);
-        this.state.ball.currentTileId = TOURNAMENT_DATA[this.state.currentTournamentIndex].holes[this.state.currentHoleIndex].map[gridY]?.[gridX] ?? 1;
+        
+        const activeMap = this.getActiveMapGrid();
+        this.state.ball.currentTileId = activeMap[gridY]?.[gridX] ?? 1;
 
         audio.playMulligan();
         return true;
@@ -465,7 +296,7 @@ export class DataEngine {
     takeTelemetryDrop() {
         if (this.state.ball.currentTileId !== 4 || this.state.ball.isMoving) return false;
 
-        const mapGrid = TOURNAMENT_DATA[this.state.currentTournamentIndex].holes[this.state.currentHoleIndex].map;
+        const mapGrid = this.getActiveMapGrid();
         let closestDist = Infinity;
         let targetPos: Vector2D = { x: 50, y: 100 };
         let found = false;
@@ -556,6 +387,14 @@ export class DataEngine {
             return true;
         }
 
+        if (item.type === 'block') {
+            this.state.money -= item.price;
+            const block = item.ref;
+            this.state.blockInventory[block.tileId] = (this.state.blockInventory[block.tileId] || 0) + 1;
+            this.state.shopDraft.splice(idx, 1);
+            return true;
+        }
+
         if (item.type === 'mulligan') {
             this.state.money -= item.price;
             this.state.mulligansLeft += (item.amount ?? 1);
@@ -587,5 +426,70 @@ export class DataEngine {
         }
 
         return false;
+    }
+
+    /** Place a block from inventory onto the active hole grid */
+    placeBlock(r: number, c: number, tileId: number): boolean {
+        const count = this.state.blockInventory[tileId] || 0;
+        if (count <= 0) return false;
+
+        const baseMap = TOURNAMENT_DATA[this.state.currentTournamentIndex].holes[this.state.currentHoleIndex].map;
+        if (r < 0 || r >= 12 || c < 0 || c >= 16) return false;
+
+        const baseTile = baseMap[r][c];
+        // Cannot overwrite Tee Box (0), Cup (5), or Slate Wall boundaries (7)
+        if (baseTile === 0 || baseTile === 5 || baseTile === 7) return false;
+
+        // Cannot place directly on top of the ball
+        const ballGridX = Math.floor(this.state.ball.pos.x / 32);
+        const ballGridY = Math.floor(this.state.ball.pos.y / 32);
+        if (ballGridX === c && ballGridY === r) return false;
+
+        // Reclaim existing custom block at this location if one was placed
+        const existingIdx = this.state.placedBlocks.findIndex(b => b.r === r && b.c === c);
+        if (existingIdx >= 0) {
+            this.removeBlock(r, c);
+        }
+
+        this.state.placedBlocks.push({
+            r,
+            c,
+            tileId,
+            originalTileId: baseTile
+        });
+
+        this.state.blockInventory[tileId]--;
+        return true;
+    }
+
+    /** Remove a placed block and restore the original tile */
+    removeBlock(r: number, c: number): boolean {
+        const idx = this.state.placedBlocks.findIndex(b => b.r === r && b.c === c);
+        if (idx < 0) return false;
+
+        const block = this.state.placedBlocks[idx];
+        this.state.placedBlocks.splice(idx, 1);
+
+        this.state.blockInventory[block.tileId] = (this.state.blockInventory[block.tileId] || 0) + 1;
+        return true;
+    }
+
+    /** Sweep all placed blocks back into inventory */
+    reclaimAllPlacedBlocks() {
+        if (!this.state.placedBlocks) return;
+        for (const block of this.state.placedBlocks) {
+            this.state.blockInventory[block.tileId] = (this.state.blockInventory[block.tileId] || 0) + 1;
+        }
+        this.state.placedBlocks = [];
+    }
+
+    /** Dynamically construct the active map including player-placed blocks */
+    getActiveMapGrid(): number[][] {
+        const baseMap = TOURNAMENT_DATA[this.state.currentTournamentIndex].holes[this.state.currentHoleIndex].map;
+        const grid = baseMap.map(row => [...row]);
+        for (const b of this.state.placedBlocks) {
+            grid[b.r][b.c] = b.tileId;
+        }
+        return grid;
     }
 }

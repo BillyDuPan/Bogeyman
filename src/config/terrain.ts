@@ -50,584 +50,496 @@ export interface TournamentData {
     cutTarget: number;
     rewardCash: number;
     holes: {
+        name: string;
         par: number;
         map: number[][];
     }[];
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 8 Tournaments × 3 holes each — all maps use the full 12-row × 16-col grid.
-//
-// Grid key:
-//   W=Wall  T=Tee  F=Fairway  R=Rough  B=Sand  H=Water
-//   C=Cup   G=Green  O=Bumper  X=Gate  K=Cobblestone  D=BoneDust
-// ─────────────────────────────────────────────────────────────────────────────
 export const TOURNAMENT_DATA: TournamentData[] = [
-
-    // ═══════════════════════════════════════════════════════════════
-    // T1 — The Foggy Hollow Open  (Intro / Setup your economy)
-    // ═══════════════════════════════════════════════════════════════
     {
         name: 'The Foggy Hollow Open',
-        cutTarget: 850,
-        rewardCash: 120, // Slightly more cash to buy early passive powerups
+        cutTarget: 1000,
+        rewardCash: 120,
         holes: [
             {
-                // H1 — Par 3 — "Coffin Corner"
-                // Balanced: Added a corner Bumper (O) at the bend so players can 
-                // pull off a cool trick-shot to double their multiplier early.
+                name: 'Coffin Corner',
                 par: 3,
                 map: parseMap(`
                     WWWWWWWWWWWWWWWW
-                    WTTFFFFFFWWWWWWW
+                    WFFFFFFFFFFFFFFW
+                    WFTFFFFFFFFFFOFW
+                    WFFFFFFFFFFFFFFW
+                    WWWWWWWWWWFFFFFW
+                    WWWWWWWWWWFFFFFW
+                    WWWWWWWWWWFFFFFW
+                    WWWWWWWWWWFFFFFW
+                    WWWWWWWWWWGGGGGW
+                    WWWWWWWWWWGGCGGW
+                    WWWWWWWWWWGGGGGW
+                    WWWWWWWWWWWWWWWW
+                `)
+            },
+            {
+                name: 'Ghost Trail',
+                par: 4,
+                map: parseMap(`
+                    WWWWWWWWWWWWWWWW
+                    WWWWWWWWWWGGGGGW
+                    WWWWWWWWWWGGCGGW
+                    WWWWWWWWWWGGGGGW
+                    WWWWWWWWWXGGGGGW
+                    WWWWWWFFFFXWWWWW
+                    WWWWWWFFFFFWWWWW
                     WFFFFFFFFWWWWWWW
-                    WFFFFFFFFFOWFFFF
-                    WWWWWWWWWFFFFFFW
-                    WWWWWWWWWFFFFFFW
-                    WWWWWWWWWFFFFFFW
-                    WWWWWWWWWFFFFFFW
-                    WWWWWWWWWFFFGGGW
-                    WWWWWWWWWFFGCGGW
-                    WWWWWWWWWFFFGGGW
+                    WFFFFFFFFWWWWWWW
+                    WFTFFFFFFWWWWWWW
+                    WFFFFFFFFWWWWWWW
                     WWWWWWWWWWWWWWWW
                 `)
             },
             {
-                // H2 — Par 4 — "Ghost Trail"
-                // Balanced: Added a central Multiplier Gate (X) in the main fairway channel
-                // to reward accurate straight-driving.
+                name: 'The Boomerang',
                 par: 4,
                 map: parseMap(`
                     WWWWWWWWWWWWWWWW
-                    WWWWWWWWWTTFFFFF
-                    WWWWWWWWWFFFFFFF
-                    WWWWWWWWWFFFFFFF
-                    WFFFFFFFXFFFFFFW
-                    WFFFFFFWWWWWWWWW
-                    WFFFFFFWWWWWWWWW
-                    WFFFFFFWWWWWWWWW
-                    WFFFGGGWWWWWWWWW
-                    WFFGCGGWWWWWWWWW
-                    WFFFGGGWWWWWWWWW
-                    WWWWWWWWWWWWWWWW
-                `)
-            },
-            {
-                // H3 — Par 4 — "The Boomerang"
-                // Balanced: Placed safety Bumpers (O) on the outer wall of the U-turn
-                // to encourage a fun bank-shot strategy that speeds up progress.
-                par: 4,
-                map: parseMap(`
-                    WWWWWWWWWWWWWWWW
-                    WTTFFFFFFFFFFFFW
-                    WWWWWWWWWWWWFFOW
-                    WWWWWWWWWWWWFFFW
-                    WWWWWWWWWWWWFFFW
+                    WFFFFFFFFFFFFFFW
+                    WFTFFFFFFFFFFOFW
+                    WFFFFFFFFFFFFFFW
+                    WWWWWWWWWWFFFFFW
+                    WWWWWWWWWWFFFFFW
                     WFFFFFFFFFFFFWWW
-                    WFFFFFFWWWWWWWWW
-                    WFFFFFFWWWWWWWWW
-                    WFFFGGGWWWWWWWWW
-                    WFFGCGGWWWWWWWWW
-                    WFFFGGGWWWWWWWWW
+                    WFFFFFFFFFFFFWWW
+                    WFGGGGGWWWWWWWWW
+                    WFGGCGGWWWWWWWWW
+                    WFGGGGGWWWWWWWWW
                     WWWWWWWWWWWWWWWW
                 `)
             },
         ]
     },
-
-    // ═══════════════════════════════════════════════════════════════
-    // T2 — Bone Bunker Classic  (Sand hazards with high-reward escapes)
-    // ═══════════════════════════════════════════════════════════════
     {
         name: 'Bone Bunker Classic',
-        cutTarget: 1400,
+        cutTarget: 2500,
         rewardCash: 180,
         holes: [
             {
-                // H1 — Par 3 — "Sand Tomb"
-                // Balanced: Double multiplier gates in the bottom fairway corridor 
-                // to turn recovery shots into high-scoring turnarounds.
+                name: 'Sand Tomb',
                 par: 3,
                 map: parseMap(`
                     WWWWWWWWWWWWWWWW
-                    WTTFFFWWWWWWWWWW
-                    WFFFFFWWWWWWWWWW
-                    WFBBBFWWWWWWWWWW
-                    WFBBBBWWWWWWWWWW
-                    WFOBBFWWWWWWWWWW
-                    WFFFFFWWWWWWWWWW
-                    WFFFFXFFFFFFFFFW
-                    WWWWWFFFFFFFFFGW
-                    WWWWWFFFFFFFFFCW
-                    WWWWWFFFFFFFFFGW
+                    WFFFFFFFFWWWWWWW
+                    WFTFFFFFFFFWWWWW
+                    WFFFFFFFFFFFFFFW
+                    WFFFFFBBBGGGGGGW
+                    WFFFFFBBBGGCGGGW
+                    WFFFFFBBBGGGGGGW
+                    WFFFFFFFFFFFFFFW
+                    WFFFFFFFFFFFFFFW
+                    WFFFFFFFFFFFFFFW
+                    WFFFFFFFFFFFFFFW
                     WWWWWWWWWWWWWWWW
                 `)
             },
             {
-                // H2 — Par 4 — "The Grinder"
-                // Balanced: Added a clean pathway flanked by Bumpers, making
-                // it easier to bounce out of trouble if you misjudge the sand.
+                name: 'The Grinder',
                 par: 4,
                 map: parseMap(`
                     WWWWWWWWWWWWWWWW
-                    WTTFFFFFBBBFFFFW
-                    WFFFFFFBOBFFFFFW
-                    WFFFFFFBXBFFFFFW
-                    WFFFFFFBOBFFFFFW
-                    WFFFFFFFFFFFFWWW
-                    WFFFFFFFFFFFFWWW
-                    WWWWWWWWWFFFFFFW
-                    WWWWWWWWWFFGGGGW
-                    WWWWWWWWWFFGCGGW
-                    WWWWWWWWWFFGGGGW
+                    WFFFFFFFFFFFFFFW
+                    WFTFFFFFFFFFFFFW
+                    WFFFFFFFFFFFFFFW
+                    WWWWWWFFBXXBWWWW
+                    WWWWWWFFBXXBWWWW
+                    WWWWWWFFBOOBWWWW
+                    WWWWWWFFFFFFFFFW
+                    WWWWWWFFGGGGGGWW
+                    WWWWWWFFGGCGGWWW
+                    WWWWWWFFGGGGGGWW
                     WWWWWWWWWWWWWWWW
                 `)
             },
             {
-                // H3 — Par 5 — "Dune Serpent"
-                // Balanced: Additional gates (X) and bumpers (O) on the bends
-                // reward bold shortcuts through the sand.
+                name: 'Dune Serpent',
                 par: 5,
                 map: parseMap(`
                     WWWWWWWWWWWWWWWW
-                    WTTFBBBBBBBBBFFW
-                    WFFFBBBBBBBBBFFW
-                    WFFFBBOBBBBFFFWW
-                    WFFFFFFFFXFFFFFW
-                    WWWWWWWWWFBBBFFW
-                    WWWWWWWWWFBBBFFW
-                    WWWWWWWWWFFFFFWW
                     WFFFFFFFFFFFFFFW
-                    WXFFFFFFFGGGGGGW
+                    WFTFFFFFFFFFFFFW
+                    WFFFFFBBBBBBFFFW
+                    WWWWWFFBXXBFFFFW
+                    WWWWWFFBOOBFFFFW
+                    WFFFFFFBBBBBBFFW
+                    WFFFFFFFFFFFFFFW
+                    WFFFFFFFFGGGGGGW
                     WFFFFFFFFGGCGGGW
+                    WFFFFFFFFGGGGGGW
                     WWWWWWWWWWWWWWWW
                 `)
             },
         ]
     },
-
-    // ═══════════════════════════════════════════════════════════════
-    // T3 — The Ecto-Pond Pro-Am  (Water hazard balance — No more run-killing)
-    // ═══════════════════════════════════════════════════════════════
     {
         name: 'The Ecto-Pond Pro-Am',
-        cutTarget: 3200, // Slightly reduced cut target to help players transition
+        cutTarget: 6000,
         rewardCash: 280,
         holes: [
             {
-                // H1 — Par 3 — "Island Haunt"
-                // Balanced: Added floating Bumpers (O) in the water moat. 
-                // Now, if you hit a bad angle, you have a chance to bounce onto the green 
-                // with a massive bonus score instead of just hitting water.
+                name: 'Island Haunt',
                 par: 3,
                 map: parseMap(`
                     WWWWWWWWWWWWWWWW
-                    WWWWWWWWWWWWWWWW
-                    WTFFFFFFFFHHHHWW
-                    WFFFFHHHXHHGGGWW
-                    WFFFFHHOHHGGCGWW
-                    WWWFFHHHXHHGGGWW
-                    WWWFFFFFFFHHHHWW
-                    WWWWWWWWWWWWWWWW
-                    WWWWWWWWWWWWWWWW
-                    WWWWWWWWWWWWWWWW
-                    WWWWWWWWWWWWWWWW
+                    WFFFFFFFFFFFFFFW
+                    WFTFFFFFFFFFFFFW
+                    WFFFFFHHHHHHHHHW
+                    WFFFFFHHHGGGHHHW
+                    WFFFFFHHHGCGHHHW
+                    WFFFFFHHHGGGHHHW
+                    WFFFFFHHHHHHHHHW
+                    WFFFFFHHHHHHHHHW
+                    WFFFFFFFFFFFFFFW
+                    WFFFFFFFFFFFFFFW
                     WWWWWWWWWWWWWWWW
                 `)
             },
             {
-                // H2 — Par 4 — "The Skim"
-                // Balanced: Placed Multiplier Gates (X) straight across the lake center. 
-                // Skimming through the center of the lake is now incredibly rewarding and scores huge.
+                name: 'The Skim',
                 par: 4,
                 map: parseMap(`
                     WWWWWWWWWWWWWWWW
-                    WTTFFFFFFFFFFFFW
                     WFFFFFFFFFFFFFFW
-                    WHHHHHHHHHHHHHFW
+                    WFTFFFFFFFFFFFFW
+                    WHHHHHHHHHHHHHHW
                     WXXXXXXXXXXXXXFW
-                    WHHHHHHHHHHHHHFW
-                    WHHHHHHHHHHHHHFW
+                    WHHHHHHHHHHHHHHW
+                    WHHHHHHHHHHHHHHW
                     WFFFFFFFFFFFFFFW
-                    WWWWWWWWWFFFGGGG
-                    WWWWWWWWWFFFGGCG
-                    WWWWWWWWWFFFGGGG
+                    WWWWWWWWWGGGGGGW
+                    WWWWWWWWWGGCGGGW
+                    WWWWWWWWWGGGGGGW
                     WWWWWWWWWWWWWWWW
                 `)
             },
             {
-                // H3 — Par 4 — "Bog Maze"
-                // Balanced: Added strategic Bumpers (O) on the tight fairway corners 
-                // to allow players to safely bank shots around water channels.
+                name: 'Bog Maze',
                 par: 4,
                 map: parseMap(`
                     WWWWWWWWWWWWWWWW
-                    WTTFFHHHHHFFFWWW
-                    WFFFWHHHHHWFFFWW
-                    WFFFWHHHHHWFFFWW
-                    WFFFFFFHHHFFFFWW
-                    WFOFFFFHHHFFOFFW
-                    WHHHHHHFFFFFFFFW
-                    WFFFFFHHHFFFFFGW
-                    WFFFFFHHHFFFFGGW
-                    WWWWWWFFFFGGGGGW
-                    WWWWWWFFFFGGCGGW
+                    WFFFFFFFFFFFFFFW
+                    WFTFFFFFFFFFFFFW
+                    WFFFFFHHHHHFFFFW
+                    WWWWWFFHHHFFFFFW
+                    WWWWWFFHHHFFFFFW
+                    WFFFFFFHHHHHHFFW
+                    WFFFFFFFFFFFFFFW
+                    WFFFFFFFFGGGGGGW
+                    WFFFFFFFFGGCGGGW
+                    WFFFFFFFFGGGGGGW
                     WWWWWWWWWWWWWWWW
                 `)
             },
         ]
     },
-
-    // ═══════════════════════════════════════════════════════════════
-    // T4 — Spirit Gate Gauntlet  (Unleash the multiplier combos!)
-    // ═══════════════════════════════════════════════════════════════
     {
         name: 'Spirit Gate Gauntlet',
-        cutTarget: 6000,
+        cutTarget: 12000,
         rewardCash: 450,
         holes: [
             {
-                // H1 — Par 4 — "The Arch"
-                // Balanced: Added helper bumpers at the start to line up perfect 
-                // triple-gate shots with surgical accuracy.
+                name: 'The Arch',
                 par: 4,
                 map: parseMap(`
                     WWWWWWWWWWWWWWWW
-                    WTTFXFFXFFFXFFFG
-                    WFFFXFFXFFFXFFFG
-                    WFFFXFFXFFFXFFFC
-                    WFFFXFFXFFFXFFFG
-                    WTTFXFFXFFFXFFFG
-                    WFFFOFFFFFFFFWWW
-                    WFFFFFFFFFFFFWWW
-                    WWWWWWWWWWWWWWWW
-                    WWWWWWWWWWWWWWWW
-                    WWWWWWWWWWWWWWWW
+                    WFFFFFFFFFFFFFFW
+                    WFTFFFFFFFFFFFFW
+                    WFFFXFFXFFFXFFFW
+                    WFFFXFFXFFFXFFFW
+                    WFFFXFFXFFFXFFFW
+                    WFFFFFFFFFFFFFFW
+                    WFFFFFFFFFFFFFFW
+                    WFFFFFFFFGGGGGGW
+                    WFFFFFFFFGGCGGGW
+                    WFFFFFFFFGGGGGGW
                     WWWWWWWWWWWWWWWW
                 `)
             },
             {
-                // H2 — Par 4 — "Spirit Corridor"
-                // Balanced: Added corner guide-bumpers to make navigating the 
-                // tight Z-turn satisfying and explosive.
+                name: 'Spirit Corridor',
                 par: 4,
                 map: parseMap(`
                     WWWWWWWWWWWWWWWW
-                    WWWWWWWWWTTFFFFF
-                    WWWWWWWWWFFFFFFF
-                    WWWWWWWWWFFFFFFW
-                    WFFFFFFXXXXXXXFW
+                    WFFFFFFFFFFFFFFW
+                    WFTFFFFFFFFFFFFW
+                    WFFFFFFXXXXXXFFW
                     WFFFFFOWWWWWWWWW
                     WFFFFFFWWWWWWWWW
                     WFFFFFFWWWWWWWWW
-                    WFFFGGGWWWWWWWWW
-                    WFFGCGGWWWWWWWWW
-                    WFFFGGGWWWWWWWWW
+                    WFFFFFFFFFFFFFFW
+                    WFFFFFFFFGGGGGGW
+                    WFFFFFFFFGGCGGGW
+                    WFFFFFFFFGGGGGGW
                     WWWWWWWWWWWWWWWW
                 `)
             },
             {
-                // H3 — Par 5 — "Grand Portal"
-                // Balanced: Placed crossway gates and bumpers at the final approach 
-                // to guarantee high multiplier scoring before sinking.
+                name: 'Grand Portal',
                 par: 5,
                 map: parseMap(`
                     WWWWWWWWWWWWWWWW
-                    WTTFFFFXFFFFWWWW
-                    WFFFFFFXFFFFWWWW
-                    WFFFFFFXFFFFWWWW
                     WFFFFFFFFFFFFFFW
-                    WWWWWWWFFFFFWWWW
-                    WWWWWWWXXXXXWWWW
-                    WWWWWWWFFFFFWWWW
-                    WWWWWWWFFFFFFOOF
-                    WWWWWWWFFFFFOFGW
-                    WWWWWWWFFFFGCGGW
+                    WFTFFFFFFFFFFFFW
+                    WFFFFFFXFFFFFFFW
+                    WFFFFFFXFFFFFFFW
+                    WFFFFFFXFFFFFFFW
+                    WXXXXXXXXXXXXXXW
+                    WFFFFFFFFFFFFFFW
+                    WWWWWWWWWGGGGGGW
+                    WWWWWWWWWGGCGGGW
+                    WWWWWWWWWGGGGGGW
                     WWWWWWWWWWWWWWWW
                 `)
             },
         ]
     },
-
-    // ═══════════════════════════════════════════════════════════════
-    // T5 — Wraith Bumper Masters  (Pure Pinball / Huge Dopamine)
-    // ═══════════════════════════════════════════════════════════════
     {
         name: 'Wraith Bumper Masters',
-        cutTarget: 10000,
+        cutTarget: 22000,
         rewardCash: 650,
         holes: [
             {
-                // H1 — Par 4 — "The Triangle"
-                // Balanced: Added a side corridor with Multiplier Gates to reward 
-                // players who slice through the pinball cluster.
+                name: 'The Triangle',
                 par: 4,
                 map: parseMap(`
                     WWWWWWWWWWWWWWWW
-                    WTTFFFFFFFFFFFFW
+                    WFFFFFFFFFFFFFFW
+                    WFTFFFFFFFFFFFFW
                     WFFFFFOFFFFFFWWW
                     WFFFFOFOFFFFFFFW
                     WFFFOFFFFFOFFFFW
                     WFFFFOFOFFFFFFFW
                     WFFFFFOFFFFFFWWW
-                    WWWWWWWWWXXXXXFW
-                    WWWWWWWWWFFFGGGW
-                    WWWWWWWWWFFGCGGW
-                    WWWWWWWWWFFFGGGW
+                    WWWWWWWWWGGGGGGW
+                    WWWWWWWWWGGCGGGW
+                    WWWWWWWWWGGGGGGW
                     WWWWWWWWWWWWWWWW
                 `)
             },
             {
-                // H2 — Par 5 — "Chain Reaction"
-                // Balanced: Alternated Gate-Bumper rows so players can chain 
-                // back and forth to reach over 100x multiplier values.
+                name: 'Chain Reaction',
                 par: 5,
                 map: parseMap(`
                     WWWWWWWWWWWWWWWW
-                    WTTFFFFFFFFFFFFW
                     WFFFFFFFFFFFFFFW
+                    WFTFFFFFFFFFFFFW
                     WFOFOFOFOFOFOFFW
                     WFFFFFFFFFFFFFFW
                     WFXXXXXXXXXXXXFW
                     WFOFOFOFOFOFOFFW
                     WFFFFFFFFFFFFFFW
-                    WWWWWWWWWFFFFFFW
-                    WWWWWWWWWFFFGGGW
-                    WWWWWWWWWFFGCGGW
+                    WWWWWWWWWGGGGGGW
+                    WWWWWWWWWGGCGGGW
+                    WWWWWWWWWGGGGGGW
                     WWWWWWWWWWWWWWWW
                 `)
             },
             {
-                // H3 — Par 4 — "Pinball Crypt"
-                // Balanced: More dense configurations of Bumpers and Gates 
-                // to turn the entire screen into an explosive score cascade.
+                name: 'Pinball Crypt',
                 par: 4,
                 map: parseMap(`
                     WWWWWWWWWWWWWWWW
-                    WTTFXFFOFFXFFFFW
+                    WFFFFFFFFFFFFFFW
+                    WFTFFFFFFFFFFFFW
                     WFFXFOFOOFXFFFFW
                     WFXFFOFFXFFXFFFW
                     WFFXFOFOOFXFFFFW
                     WFFFXFFOFFXFFFFW
                     WFFFFFFFFFFFFFFW
-                    WWWWWWWWWFFFFFFW
-                    WWWWWWWWWFFFGGGW
-                    WWWWWWWWWFFGCGGW
-                    WWWWWWWWWFFFGGGW
+                    WWWWWWWWWGGGGGGW
+                    WWWWWWWWWGGCGGGW
+                    WWWWWWWWWGGGGGGW
                     WWWWWWWWWWWWWWWW
                 `)
             },
         ]
     },
-
-    // ═══════════════════════════════════════════════════════════════
-    // T6 — Haunted Hazard Archipelago  (Balanced survival test)
-    // ═══════════════════════════════════════════════════════════════
     {
         name: 'Haunted Hazard Archipelago',
-        cutTarget: 18000,
+        cutTarget: 40000,
         rewardCash: 900,
         holes: [
             {
-                // H1 — Par 4 — "The Archipelago"
-                // Balanced: Added stepping-stone bumpers in the water gaps 
-                // so off-target shots bounce safely to the next island.
+                name: 'The Archipelago',
                 par: 4,
                 map: parseMap(`
                     WWWWWWWWWWWWWWWW
-                    WTTFHHHHHHHHHWWW
-                    WFFFHFFFFFHHWWWW
+                    WFFFFFFFFFFFFFFW
+                    WFTFFFFFFFFFFFFW
                     WHHHHFOFFFHHWWWW
                     WHHHHHHHHHHHHWWW
                     WHHHFFFFFFFHHWWW
                     WHHHFFFFFFFHHWWW
                     WHHHHHHHHHHHHWWW
-                    WHHHHFFFFFFHHWWW
-                    WHHHHFFFFGCGHHWW
-                    WHHHHFFFFFFHHWWW
+                    WHHHHFFFFFGGGGGW
+                    WHHHHFFFFFGGCGGW
+                    WHHHHFFFFFGGGGGW
                     WWWWWWWWWWWWWWWW
                 `)
             },
             {
-                // H2 — Par 5 — "Bone Swamp"
-                // Balanced: Cobblestone routes are wider and lead directly into 
-                // double multiplier gates, turning the slow ground into a launcher.
+                name: 'Bone Swamp',
                 par: 5,
                 map: parseMap(`
                     WWWWWWWWWWWWWWWW
-                    WTTKKKKKKKKKKKKW
+                    WFFFFFFFFFFFFFFW
+                    WFTFFFFFFFFFFFFW
+                    WFFKKKKKKKKKKKFW
                     WFFRRRHHHHRRFFFW
-                    WFFKKKHHHHKKKFFW
                     WFFKKKHHHHKKKFFW
                     WFFRRRHHHHRRFFFW
                     WFFFFFFFFXXFFFFW
-                    WWWWWWWWWBBBBBBW
-                    WWWWWWWWWBBBBBBW
-                    WWWWWWWWWFFFGGGW
-                    WWWWWWWWWFFGCGGW
+                    WWWWWWWWWGGGGGGW
+                    WWWWWWWWWGGCGGGW
+                    WWWWWWWWWGGGGGGW
                     WWWWWWWWWWWWWWWW
                 `)
             },
             {
-                // H3 — Par 4 — "The Gauntlet"
-                // Balanced: Water channels are flanked by buffer gates 
-                // to give high-skimming balls a huge extra boost.
+                name: 'The Gauntlet',
                 par: 4,
                 map: parseMap(`
                     WWWWWWWWWWWWWWWW
-                    WTTFHHHHWWWWWWWW
-                    WFFFHHHHWWWWWWWW
-                    WFFFHHHHWWWWWWWW
                     WFFFFFFFFFFFFFFW
+                    WFTFFFFFFFFFFFFW
+                    WFFFHHHHWWWWWWWW
+                    WFFFHHHHWWWWWWWW
                     WWWWWWWWWBBBOOOW
-                    WWWWWWWWWBBBFFFW
+                    WWWWWWWWWKKKFFFW
                     WWWWWWWWWFXXFFFW
-                    WWWWWWWWWFFFGGGW
-                    WWWWWWWWWFFGCGGW
-                    WWWWWWWWWFFFFGGW
+                    WWWWWWWWWGGGGGGW
+                    WWWWWWWWWGGCGGGW
+                    WWWWWWWWWGGGGGGW
                     WWWWWWWWWWWWWWWW
                 `)
             },
         ]
     },
-
-    // ═══════════════════════════════════════════════════════════════
-    // T7 — Specter Gorge Championship  (Precision with bumpers)
-    // ═══════════════════════════════════════════════════════════════
     {
         name: 'Specter Gorge Championship',
-        cutTarget: 28000, // Balanced target down slightly
+        cutTarget: 65000,
         rewardCash: 1300,
         holes: [
             {
-                // H1 — Par 4 — "The Gorge"
-                // Balanced: Since wall bounces are unavoidable here, we've lined the gorge 
-                // with occasional bumpers to catapult the ball down the tight canyon.
+                name: 'The Gorge',
                 par: 4,
                 map: parseMap(`
                     WWWWWWWWWWWWWWWW
-                    WTTFFFWWWWWWWWWW
+                    WFFFFFFFFFFFFFFW
+                    WFTFFFFFFFFFFFFW
                     WFFOFFWWWWWWWWWW
                     WFFFFFWWWWWWWWWW
-                    WWWWWWWWWWWWWWWW
-                    WWWWWWWWWFOFFFWW
-                    WWWWWWWWWFFFFFWW
-                    WWWWWWWWWFFFFFWW
-                    WWWWWWWWWWWWWWWW
-                    WWWWWWWWWWWWWWWW
-                    WWWWWWWWWWWWWWWW
+                    WFFFFWWWWWWWWWWW
+                    WFFFFWWWWWWWWWWW
+                    WFFFFWWWWWWWWWWW
+                    WFFFFXFFFFGGGGGW
+                    WFFFFFFFFFGGCGGW
+                    WFFFFFFFFFGGGGGW
                     WWWWWWWWWWWWWWWW
                 `)
             },
             {
-                // H2 — Par 4 — "Catacombs"
-                // Balanced: Re-arranged bumpers around chamber doorways so players 
-                // can make high-speed bank shots into the next rooms.
+                name: 'Catacombs',
                 par: 4,
                 map: parseMap(`
                     WWWWWWWWWWWWWWWW
-                    WTTFFFFFFFHHHWWW
+                    WFFFFFFFFFFFFFFW
+                    WFTFFFFFFFFFFFFW
                     WFFFOBBBOOHHHHWW
                     WFFFFFFFOBHHHWWW
                     WFFFFFFXXXXXXXXW
                     WFFFFFFWWWWWWWWW
                     WFFFFFFWWWWWWWWW
-                    WFFFFFWWWWWWWWWW
-                    WFFFFFWWWWWWWWWW
-                    WFFFFGGWWWWWWWWW
-                    WFFFGCGWWWWWWWWW
+                    WFFFFFFFFFFFFFFW
+                    WFFFFFFFFGGGGGGW
+                    WFFFFFFFFGGCGGGW
                     WWWWWWWWWWWWWWWW
                 `)
             },
             {
-                // H3 — Par 5 — "Specter's Bridge"
-                // Balanced: Added an exciting "Bumper Bridge" across the water hazard 
-                // for satisfying direct trick-shots.
+                name: "Specter's Bridge",
                 par: 5,
                 map: parseMap(`
                     WWWWWWWWWWWWWWWW
-                    WTTFFFFFFFFFFFFW
                     WFFFFFFFFFFFFFFW
+                    WFTFFFFFFFFFFFFW
                     WHHHHHHHHHHKKKFW
                     WHHOHOHOHHHKKKFW
                     WFFFFFFFFFFFKKKW
-                    WFFFFFFFFFFFKKKW
                     WFFFFOOFOOFFFFFW
                     WFFFFFXXXXXXXFFW
-                    WWWWWWWWWFFFGGGW
-                    WWWWWWWWWFFGCGGW
+                    WWWWWWWWWGGGGGGW
+                    WWWWWWWWWGGCGGGW
+                    WWWWWWWWWGGGGGGW
                     WWWWWWWWWWWWWWWW
                 `)
             },
         ]
     },
-
-    // ═══════════════════════════════════════════════════════════════
-    // T8 — Bogeyman's Final Haunt  (The ultimate endgame puzzle)
-    // ═══════════════════════════════════════════════════════════════
     {
         name: "Bogeyman's Final Haunt",
-        cutTarget: 50000,
+        cutTarget: 120000,
         rewardCash: 3000,
         holes: [
             {
-                // H1 — Par 4 — "Death March"
-                // Balanced: Added central Multiplier Gates inside the skull's "nose" 
-                // to make the critical final approach highly explosive.
+                name: 'Death March',
                 par: 4,
                 map: parseMap(`
                     WWWWWWWWWWWWWWWW
-                    WTTFHHHHHHHHHFFW
-                    WFFFHFFFFFHFHFFW
-                    WFFFHFFFFFHFHFFW
+                    WFFFFFFFFFFFFFFW
+                    WFTFFFFFFFFFFFFW
                     WFFFFFFKKKFFFFFF
                     WFFFFFFKDKFFFFFF
                     WFFFFFFKDKFFFFFF
                     WHHHHHHXXXHHHHFW
                     WHHHHFFKKKFHHHHW
-                    WHHHHFFGGGFHHHHW
-                    WHHHHFFGCGFHHHHW
+                    WHHHHFFGGGGGHHHW
+                    WHHHHFFGGCGGHHHW
+                    WHHHHFFGGGGGHHHW
                     WWWWWWWWWWWWWWWW
                 `)
             },
             {
-                // H2 — Par 5 — "Soul Grinder"
-                // Balanced: Added supportive bumper paths that bounce players out of 
-                // bone dust pits and directly through multiplier lanes.
+                name: 'Soul Grinder',
                 par: 5,
                 map: parseMap(`
                     WWWWWWWWWWWWWWWW
-                    WTTDDDDDDDDDDDFW
-                    WFFDDDDDDDDDDDFW
+                    WFFFFFFFFFFFFFFW
+                    WFTFFFFFFFFFFFFW
                     WFDDXDDXDDXDDDDW
                     WFDDKDDKDDKDDDDW
                     WFFKKKKKKKKKKKKW
                     WFFBBBBBBBBBBBFW
                     WFFBBBBBBBBBBBFW
-                    WFFFFFFFFFFFFFFW
-                    WWWWWWWWOFOGGGWW
-                    WWWWWWWWOFGCGGWW
+                    WWWWWWWWGGGGGGWW
+                    WWWWWWWWGGCGGGWW
+                    WWWWWWWWGGGGGGWW
                     WWWWWWWWWWWWWWWW
                 `)
             },
             {
-                // H3 — Par 5 — "Bogeyman's Throne"
-                // Balanced: The ultimate level. Added helper bumpers in the corners of 
-                // the final water moat and multiplier gates along the bone dust finish 
-                // to allow players to construct 100,000+ score turns if played with skill.
+                name: "Bogeyman's Throne",
                 par: 5,
                 map: parseMap(`
                     WWWWWWWWWWWWWWWW
-                    WTTFHHHHHHHHHHFW
-                    WFFFHHHHHHHHHHFW
-                    WFFFHHHHHHHHHHFW
                     WFFFFFFFFFFFFFFW
+                    WFTFFFFFFFFFFFFW
                     WFOFOFOFOFOFOFOW
                     WFOFOFOFOFOFOFWW
                     WFXXXXXXXXXXFFW
                     WFDDDDDDDDDDDFFW
-                    WWWWWWWWWFFGGGFW
-                    WWWWWWWWWFGCGGFW
+                    WWWWWWWWFFGGGGGW
+                    WWWWWWWWFFGGCGGW
+                    WWWWWWWWFFGGGGGW
+                    WWWWWWWWWWWWWWWW
                     WWWWWWWWWWWWWWWW
                 `)
             },

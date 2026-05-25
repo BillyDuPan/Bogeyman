@@ -102,10 +102,10 @@ export interface ShopDraftItem {
     name: string;
     description: string;
     price: number;
-    type: 'club' | 'sleeve' | 'mulligan' | 'stroke_boost' | 'cash_boost' | 'gamble';
+    type: 'club' | 'sleeve' | 'mulligan' | 'stroke_boost' | 'cash_boost' | 'gamble' | 'block';
     /** For mulligan: charges granted. For stroke_boost: strokes granted. For cash_boost: gold received. For gamble: win amount. */
     amount?: number;
-    ref: ClubModifier | SleeveModifier | null;
+    ref: any;
 }
 
 /** Stores the result of one completed tournament */
@@ -150,4 +150,12 @@ export interface GameState {
     shopRerollsLeft: number;
     /** Set after a gamble resolves so the UI can display the outcome */
     lastGambleResult: { won: boolean; amount: number } | null;
+    /** Whether the shop UI is collapsed/hidden in the locker room */
+    shopCollapsed?: boolean;
+    /** Player's placeable blocks inventory: mapping tileId to count owned */
+    blockInventory: Record<number, number>;
+    /** Placed blocks on the active hole map */
+    placedBlocks: Array<{ r: number; c: number; tileId: number; originalTileId: number }>;
+    /** Currently selected tileId for Build Mode, if any */
+    buildModeTileId: number | null;
 }

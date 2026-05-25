@@ -1,7 +1,7 @@
 import type { GameState } from '../types/game';
 import { audio } from '../engine/AudioSynthesizer';
 import { TOURNAMENT_DATA } from '../config/terrain';
-import { DRAFTABLE_SLEEVES } from '../engine/DataEngine';
+import { DRAFTABLE_SLEEVES } from '../config/items';
 
 
 export class ScoreHUD {
@@ -10,6 +10,8 @@ export class ScoreHUD {
     private onSleeveSelect: ((id: string) => void) | null = null;
     private onMulligan: (() => void) | null = null;
     private onDrop: (() => void) | null = null;
+    private onBlockSelect: ((tileId: number | null) => void) | null = null;
+    private onReclaimAll: (() => void) | null = null;
 
     // Dopamine counter tracking states
     private displayedCurrentPoints = 0;
@@ -23,6 +25,8 @@ export class ScoreHUD {
             onSleeveSelect: (id: string) => void;
             onMulligan: () => void;
             onDrop: () => void;
+            onBlockSelect: (tileId: number | null) => void;
+            onReclaimAll: () => void;
         }
     ) {
         this.container = container;
@@ -30,6 +34,8 @@ export class ScoreHUD {
         this.onSleeveSelect = handlers.onSleeveSelect;
         this.onMulligan = handlers.onMulligan;
         this.onDrop = handlers.onDrop;
+        this.onBlockSelect = handlers.onBlockSelect;
+        this.onReclaimAll = handlers.onReclaimAll;
         
         // Render base shell skeleton
         this.container.innerHTML = `
@@ -84,6 +90,17 @@ export class ScoreHUD {
                     <div id="sleeve-switcher" class="sleeve-switcher"></div>
                 </div>
 
+                <!-- Placeable Map Upgrades -->
+                <div class="hud-block">
+                    <div class="hud-title" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>Map Upgrades</span>
+                        <button id="btn-reclaim-all" class="reclaim-btn" title="Reclaim all placed blocks">RECLAIM</button>
+                    </div>
+                    <div id="block-inventory-list" class="club-grid">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
                 <!-- Consumable Action triggers -->
                 <div class="action-buttons">
                     <button id="btn-mulligan" class="action-btn">
@@ -107,6 +124,11 @@ export class ScoreHUD {
         const dropBtn = document.getElementById('btn-drop');
         dropBtn?.addEventListener('click', () => {
             if (this.onDrop) this.onDrop();
+        });
+
+        const reclaimBtn = document.getElementById('btn-reclaim-all');
+        reclaimBtn?.addEventListener('click', () => {
+            if (this.onReclaimAll) this.onReclaimAll();
         });
     }
 
@@ -168,11 +190,19 @@ export class ScoreHUD {
         const arcadeSubtitle = document.querySelector('.arcade-header .arcade-subtitle') as HTMLElement;
         if (state.gameMode === 'play') {
             const currentTourney = TOURNAMENT_DATA[state.currentTournamentIndex];
+            const scorecard = state.scorecardList[state.currentHoleIndex];
+            const parVal = scorecard ? scorecard.par : 3;
+            const holeDef = currentTourney.holes[state.currentHoleIndex];
+            const holeName = holeDef ? holeDef.name : `HOLE ${state.currentHoleIndex + 1}`;
+
             if (mainHeading) {
                 mainHeading.textContent = `TOUR ${state.currentTournamentIndex + 1}: ${currentTourney.name.toUpperCase()}`;
             }
             if (arcadeSubtitle) {
-                arcadeSubtitle.textContent = `HOLE ${state.currentHoleIndex + 1} OF ${currentTourney.holes.length} | CASH: $${state.money}`;
+                arcadeSubtitle.innerHTML = `
+                    <div style="font-size: 0.85em; color: var(--color-base); margin-bottom: 4px; letter-spacing: 1px;">HOLE ${state.currentHoleIndex + 1}: ${holeName.toUpperCase()}</div>
+                    <div style="font-size: 0.65em; color: var(--color-gold); letter-spacing: 1.5px;">PAR ${parVal} &nbsp;|&nbsp; CASH: $${state.money}</div>
+                `;
             }
         } else {
             if (mainHeading) {
@@ -373,6 +403,54 @@ export class ScoreHUD {
                     }
                 });
             });
+        }
+
+        // Re-populate block inventory upgrades list
+        const blockListElem = document.getElementById('block-inventory-list');
+        if (blockListElem) {
+            const BLOCK_INFOS = [
+                { tileId: 8, char: '🔴', name: 'Bumper' },
+                { tileId: 9, char: '🟣', name: 'Gate' },
+                { tileId: 6, char: '🟢', name: 'Green' },
+                { tileId: 1, char: '🟩', name: 'Fairway' }
+            ];
+
+            const htmlBuffer = BLOCK_INFOS.map(info => {
+                const count = state.blockInventory[info.tileId] || 0;
+                const isSelected = state.buildModeTileId === info.tileId;
+                const activeClass = isSelected ? 'active' : '';
+                const disabledClass = (count > 0 || isSelected) ? '' : 'disabled';
+
+                return `
+                    <div class="block-chip ${activeClass} ${disabledClass}" data-tile-id="${info.tileId}" title="${info.name}">
+                        <span class="block-chip-icon">${info.char}</span>
+                        <span class="block-chip-count">x${count}</span>
+                    </div>
+                `;
+            }).join('');
+
+            blockListElem.innerHTML = htmlBuffer;
+
+            // Attach listeners to block inventory chips
+            blockListElem.querySelectorAll('.block-chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    const tileId = parseInt(chip.getAttribute('data-tile-id') || '-1');
+                    if (tileId !== -1) {
+                        const count = state.blockInventory[tileId] || 0;
+                        if (count > 0 || state.buildModeTileId === tileId) {
+                            audio.playTick();
+                            // Toggle Build Mode selection
+                            const newVal = state.buildModeTileId === tileId ? null : tileId;
+                            if (this.onBlockSelect) this.onBlockSelect(newVal);
+                        }
+                    }
+                });
+            });
+        }
+
+        const reclaimBtn = document.getElementById('btn-reclaim-all') as HTMLButtonElement;
+        if (reclaimBtn) {
+            reclaimBtn.disabled = !state.placedBlocks || state.placedBlocks.length === 0 || state.ball.isMoving;
         }
     }
 

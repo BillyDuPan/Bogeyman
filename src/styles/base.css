@@ -1,0 +1,114 @@
+@import url('https://fonts.googleapis.com/css2?family=VT323&family=Pixelify+Sans:wght@400;600;700&display=swap');
+
+:root {
+    --bg-primary: #090712;
+    --bg-card: rgba(12, 9, 24, 0.82);
+    --border-neon: rgba(0, 210, 211, 0.35); /* Teal ghost glow */
+    --border-steel: #2a2438;
+    --color-base: #00d2d3;   /* Bogeyman Teal */
+    --color-mult: #fd79a8;   /* Ghost Pink — multipliers */
+    --color-gold: #f1c40f;
+    --color-danger: #e17055;
+    --color-success: #00b894; /* Haunted Mint */
+    --color-curse: #a29bfe;   /* Cursed Purple */
+    --font-arcade: 'VT323', monospace;
+    --font-ui: 'Pixelify Sans', sans-serif;
+    --cabinet-shadow: 0 0.8em 0px rgba(0,0,0,0.6), 0 0 2em rgba(0, 0, 0, 0.8);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+}
+
+body {
+    background-color: var(--bg-primary);
+    color: #f1f2f6;
+    font-family: var(--font-ui);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#app {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.arcade-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: row;
+    background: transparent;
+    padding: 1.5em;
+    gap: 1.2em;
+    box-sizing: border-box;
+    z-index: 2;
+    overflow: hidden;
+    transition: font-size 0.2s ease;
+}
+
+@media (max-width: 768px) {
+    .arcade-container {
+        flex-direction: column;
+        align-items: center;
+        padding: 1em;
+        overflow-y: auto;
+    }
+}
+
+/* Header & Banner Styles */
+.arcade-header {
+    margin-bottom: 0.8em;
+    text-align: center;
+}
+
+.arcade-title {
+    font-family: var(--font-arcade);
+    font-size: 2.0em;
+    color: var(--color-base);
+    text-shadow: 2px 2px 0px #000000;
+    margin-bottom: 0.4em;
+    letter-spacing: -1px;
+}
+
+.arcade-subtitle {
+    font-family: var(--font-arcade);
+    font-size: 0.96em;
+    color: var(--color-gold);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 0.6em;
+    text-shadow: 1px 1px 0px #000000;
+}
+
+/* Canvas Viewport */
+.canvas-wrapper {
+    position: relative;
+    border: 0.4em solid #1a1821;
+    border-radius: 0.4em;
+    overflow: hidden;
+    box-shadow: inset 0 0 2em rgba(0, 0, 0, 0.95);
+    background-color: #15131a;
+    transition: width 0.2s ease, height 0.2s ease;
+}
+
+canvas {
+    display: block;
+    image-rendering: pixelated;
+    width: 100%;
+    height: 100%;
+}
