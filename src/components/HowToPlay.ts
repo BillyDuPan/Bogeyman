@@ -2,7 +2,7 @@ import { audio } from '../engine/AudioSynthesizer';
 import { TUTORIAL_SLIDES } from '../config/tutorial';
 
 let context: {
-    showLockerRoom: () => void;
+    onComplete: () => void;
     resizeCabinetLayout: () => void;
     overlayContainer: HTMLElement;
     appContent: HTMLElement;
@@ -213,7 +213,7 @@ export function showHowToPlayScreen(stepIndex: number = 0) {
         stopTutorialTypewriter();
         if (isLast) {
             audio.playGate();
-            context?.showLockerRoom();
+            context?.onComplete();
         } else {
             audio.playTick();
             showHowToPlayScreen(stepIndex + 1);
@@ -223,7 +223,7 @@ export function showHowToPlayScreen(stepIndex: number = 0) {
     document.getElementById('btn-tut-skip')?.addEventListener('click', () => {
         audio.playGate();
         stopTutorialTypewriter();
-        context?.showLockerRoom();
+        context?.onComplete();
     });
 
     // Force layout refresh immediately to guarantee display consistency

@@ -8,6 +8,7 @@ import { GameCanvas } from './components/GameCanvas';
 import { setupHowToPlay, showHowToPlayScreen } from './components/HowToPlay';
 import { initBackgroundSpiral, resizeCabinetLayout } from './components/CabinetCosmetics';
 import { setupLockerRoom, showLockerRoom } from './components/LockerRoomOverlay';
+import { createTournamentSelect } from './components/TournamentSelectOverlay';
 import { setupResultsOverlay, showResolutionOverlay } from './components/ResultsOverlay';
 import { setupDebugPanel } from './components/DebugPanel';
 
@@ -35,13 +36,48 @@ const appContent       = document.getElementById('app-content')!;
 function init() {
     // ── Register sub-component contexts ──
     setupHowToPlay({
-        showLockerRoom,
+        onComplete: () => {
+            overlayContainer.style.display = 'none';
+            overlayContainer.classList.remove('overlay-fullvp');
+            appContent.style.opacity = '1.0';
+            dataEngine.initializeTournament(0);
+            dataEngine.setGameMode('play');
+            hud.update(state);
+        },
         resizeCabinetLayout,
         overlayContainer,
         appContent
     });
 
-    setupLockerRoom({ dataEngine, hud, overlayContainer, appContent });
+    const tournamentSelect = createTournamentSelect('game-tourselect-container');
+    tournamentSelect.setContext({
+        onPlay: () => {
+            overlayContainer.style.display = 'none';
+            appContent.style.opacity = '1.0';
+            dataEngine.initializeTournament(state.currentTournamentIndex);
+            dataEngine.setGameMode('play');
+            hud.update(state);
+            tournamentSelect.hide();
+        },
+        onBack: () => {
+            tournamentSelect.hide();
+            showLockerRoom();
+        }
+    });
+
+    setupLockerRoom({ 
+        dataEngine, 
+        hud, 
+        overlayContainer, 
+        appContent, 
+        showTitleScreen,
+        showTournamentSelect: () => {
+            overlayContainer.style.display = 'none';
+            appContent.style.opacity = '0';
+            tournamentSelect.show();
+            tournamentSelect.update(state);
+        }
+    });
 
     setupResultsOverlay({
         dataEngine,

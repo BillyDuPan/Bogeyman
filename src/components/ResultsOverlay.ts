@@ -223,6 +223,9 @@ export function showTourResultsScreen(passed: boolean, cashEarned: number) {
             hud.update(state);
             showTitleScreen();
         } else {
+            if (!isSeasonOver) {
+                state.currentTournamentIndex++;
+            }
             showLockerRoom('tourmap');
         }
     });

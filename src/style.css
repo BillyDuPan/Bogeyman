@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    MULLIGAN MANIA â€” CSS Entry Point
    Each file owns the styles for its matching TS component.
    ============================================================ */
@@ -26,5 +26,6 @@
 
 /* 8. Locker Room hub â€” panels, club bag, sleeves, shop cards, tour map */
 @import '/src/styles/locker-room.css';
+@import '/src/styles/tournament-select.css';
 
 

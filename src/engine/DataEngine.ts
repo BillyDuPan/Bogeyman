@@ -117,20 +117,20 @@ export class DataEngine {
 
         const items: ShopDraftItem[] = [];
 
-        // Up to 2 random unowned clubs
+        // 1 random unowned club
         const availableClubs = DRAFTABLE_CLUBS.filter(c => !this.state.inventoryClubs.includes(c.id));
-        [...availableClubs].sort(() => 0.5 - Math.random()).slice(0, 2).forEach(club => {
+        [...availableClubs].sort(() => 0.5 - Math.random()).slice(0, 1).forEach(club => {
             items.push({ id: club.id, name: club.name, description: club.description, price: club.cost, type: 'club', ref: club });
         });
 
-        // Up to 1 random unowned sleeve
+        // 1 random unowned sleeve
         const availableSleeves = DRAFTABLE_SLEEVES.filter(s => !this.state.inventorySleeves.includes(s.id));
         [...availableSleeves].sort(() => 0.5 - Math.random()).slice(0, 1).forEach(sleeve => {
             items.push({ id: sleeve.id, name: sleeve.name, description: sleeve.description, price: sleeve.cost, type: 'sleeve', ref: sleeve });
         });
 
-        // Up to 2 random blocks
-        [...DRAFTABLE_BLOCKS].sort(() => 0.5 - Math.random()).slice(0, 2).forEach(block => {
+        // 1 random block
+        [...DRAFTABLE_BLOCKS].sort(() => 0.5 - Math.random()).slice(0, 1).forEach(block => {
             items.push({
                 id: `block_${block.tileId}`,
                 name: block.name,
@@ -141,12 +141,21 @@ export class DataEngine {
             });
         });
 
-        // 2 random consumables from pool
-        [...SHOP_CONSUMABLE_POOL].sort(() => 0.5 - Math.random()).slice(0, 2).forEach(cons => {
-            items.push({ ...cons, ref: null });
-        });
+        // 1 gamble item
+        const gambleItems = SHOP_CONSUMABLE_POOL.filter(c => c.type === 'gamble');
+        if (gambleItems.length > 0) {
+            const randomGamble = gambleItems[Math.floor(Math.random() * gambleItems.length)];
+            items.push({ ...randomGamble, ref: null });
+        }
 
-        this.state.shopDraft = items.slice(0, 6);
+        // 1 instant buff (non-gamble)
+        const buffItems = SHOP_CONSUMABLE_POOL.filter(c => c.type !== 'gamble');
+        if (buffItems.length > 0) {
+            const randomBuff = buffItems[Math.floor(Math.random() * buffItems.length)];
+            items.push({ ...randomBuff, ref: null });
+        }
+
+        this.state.shopDraft = items;
     }
 
     /**
