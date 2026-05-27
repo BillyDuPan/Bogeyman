@@ -7,7 +7,12 @@
       "**/.*",
       "**/node_modules/**"
     ],
+    "cleanUrls": true,
     "rewrites": [
+      {
+        "source": "/mapmaker",
+        "destination": "/mapmaker.html"
+      },
       {
         "source": "**",
         "destination": "/index.html"
