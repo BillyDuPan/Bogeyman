@@ -274,7 +274,7 @@ export class GameCanvas {
                 this.ctx.moveTo(x + 24, y + 8);
                 this.ctx.lineTo(x + 8, y + 24);
                 this.ctx.stroke();
-            } else if (state.blockInventory[state.buildModeTileId] > 0) {
+            } else if (state.blockInventory[(state.buildModeTileId >= 12 && state.buildModeTileId <= 15) ? 12 : state.buildModeTileId] > 0) {
                 // Check if placement is valid (e.g. not Tee, Cup, Wall, or Ball)
                 const baseMap = TOURNAMENT_DATA[state.currentTournamentIndex].holes[state.currentHoleIndex].map;
                 const baseTile = baseMap[r]?.[c];
@@ -332,6 +332,37 @@ export class GameCanvas {
     private drawTile(x: number, y: number, tileId: number) {
         const def = TERRAIN_DEFS[tileId] || TERRAIN_DEFS[1];
         
+        // Custom draw for diagonal walls to allow background
+        if (tileId >= 12 && tileId <= 15) {
+            // Draw fairway base underneath
+            this.ctx.fillStyle = TERRAIN_DEFS[1].color;
+            this.ctx.fillRect(x, y, 32, 32);
+            // Draw subtle lawn mower strips
+            if (Math.floor(x / 32) % 2 === 0) {
+                this.ctx.fillStyle = 'rgba(255,255,255,0.04)';
+                this.ctx.fillRect(x, y, 32, 32);
+            }
+            
+            // Draw the triangular wall piece
+            this.ctx.fillStyle = '#2c3e50'; // slate wall color
+            this.ctx.beginPath();
+            if (tileId === 12) { // TL
+                this.ctx.moveTo(x, y); this.ctx.lineTo(x + 32, y); this.ctx.lineTo(x, y + 32);
+            } else if (tileId === 13) { // TR
+                this.ctx.moveTo(x, y); this.ctx.lineTo(x + 32, y); this.ctx.lineTo(x + 32, y + 32);
+            } else if (tileId === 14) { // BL
+                this.ctx.moveTo(x, y); this.ctx.lineTo(x + 32, y + 32); this.ctx.lineTo(x, y + 32);
+            } else if (tileId === 15) { // BR
+                this.ctx.moveTo(x + 32, y); this.ctx.lineTo(x + 32, y + 32); this.ctx.lineTo(x, y + 32);
+            }
+            this.ctx.closePath();
+            this.ctx.fill();
+            this.ctx.strokeStyle = '#1e272e';
+            this.ctx.lineWidth = 1.5;
+            this.ctx.stroke();
+            return;
+        }
+
         // Renders visual tile backgrounds
         this.ctx.fillStyle = def.color;
         this.ctx.fillRect(x, y, 32, 32);

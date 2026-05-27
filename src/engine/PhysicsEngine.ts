@@ -201,6 +201,11 @@ export class PhysicsEngine {
                     this.resolveSolidTileCollision(ball, frame, gx, gy, elasticity);
                 }
 
+                // Diagonal Wall Collisions (IDs 12-15)
+                if (tileId >= 12 && tileId <= 15) {
+                    this.resolveDiagonalTileCollision(ball, frame, gx, gy, tileId, elasticity);
+                }
+
                 // Arcade Bumper (ID 8) - circular physics reflection
                 if (tileId === 8) {
                     this.resolveCircularBumperCollision(ball, frame, gx, gy);
@@ -261,6 +266,57 @@ export class PhysicsEngine {
             
             audio.playBounce();
             if (this.onWallBounce) this.onWallBounce();
+        }
+    }
+
+    private resolveDiagonalTileCollision(ball: BallEntity, frame: StrokeFrame, gx: number, gy: number, tileId: number, elasticity: number) {
+        const L = gx * this.tileSize;
+        const T = gy * this.tileSize;
+        const S = this.tileSize;
+
+        let nx = 0, ny = 0, dist = 0;
+
+        const relX = ball.pos.x - L;
+        const relY = ball.pos.y - T;
+
+        if (tileId === 12) { // TL
+            nx = 1; ny = 1;
+            dist = (relX + relY - S) / Math.SQRT2;
+        } else if (tileId === 13) { // TR
+            nx = -1; ny = 1;
+            dist = (relY - relX) / Math.SQRT2;
+        } else if (tileId === 14) { // BL
+            nx = 1; ny = -1;
+            dist = (relX - relY) / Math.SQRT2;
+        } else if (tileId === 15) { // BR
+            nx = -1; ny = -1;
+            dist = (S - relX - relY) / Math.SQRT2;
+        }
+
+        const invSqrt2 = 1 / Math.SQRT2;
+        nx *= invSqrt2;
+        ny *= invSqrt2;
+
+        if (dist < ball.radius && dist > -ball.radius * 2) {
+            // Check bounding box approximately to avoid extending the diagonal infinitely
+            if (relX > -ball.radius && relX < S + ball.radius && relY > -ball.radius && relY < S + ball.radius) {
+                const overlap = ball.radius - dist;
+                ball.pos.x += nx * overlap;
+                ball.pos.y += ny * overlap;
+
+                const dot = ball.vel.x * nx + ball.vel.y * ny;
+                if (dot < 0) {
+                    ball.vel.x = (ball.vel.x - 2 * dot * nx) * elasticity;
+                    ball.vel.y = (ball.vel.y - 2 * dot * ny) * elasticity;
+                }
+
+                frame.bankShotCount++;
+                frame.accumulatedMultiplier += 0.5;
+                frame.collisionLog.push(`DiagWall_${gx},${gy}`);
+                
+                audio.playBounce();
+                if (this.onWallBounce) this.onWallBounce();
+            }
         }
     }
 

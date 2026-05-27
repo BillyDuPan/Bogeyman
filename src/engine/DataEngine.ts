@@ -1,7 +1,8 @@
 import type { GameState, ClubModifier, SleeveModifier, HoleScorecard, Vector2D, ShopDraftItem, TournamentResult } from '../types/game';
 import { TOURNAMENT_DATA } from '../config/terrain';
 import { audio } from './AudioSynthesizer';
-import { DEFAULT_CLUBS, DRAFTABLE_CLUBS, DRAFTABLE_SLEEVES, SHOP_CONSUMABLE_POOL, DRAFTABLE_BLOCKS } from '../config/items';
+import { DEFAULT_CLUBS, DRAFTABLE_CLUBS, DRAFTABLE_SLEEVES, SHOP_CONSUMABLE_POOL, DRAFTABLE_BLOCKS, PASSIVE_BUFF_POOL } from '../config/items';
+import type { Rarity } from '../types/game';
 
 export class DataEngine {
     private state!: GameState;
@@ -18,7 +19,7 @@ export class DataEngine {
             allowedStrokes: 3,
             mulligansLeft: 2,
             cumulativeTournamentPoints: 0,
-            selectedClubId: 'std_driver',
+            selectedClubId: 'std_9iron',
             activeBag: [...DEFAULT_CLUBS],
             activeSleeve: DRAFTABLE_SLEEVES[0],
             inventoryClubs: DEFAULT_CLUBS.map(c => c.id),
@@ -42,7 +43,9 @@ export class DataEngine {
             shopDraft: [],
             tournamentResults: [],
             pendingExtraStrokes: 0,
-            shopRerollsLeft: 2,
+            currentRerollCost: 10,
+            blocksBoughtThisSession: 0,
+            passiveBuffs: [],
             lastGambleResult: null,
             shopCollapsed: false,
             blockInventory: {},
@@ -105,70 +108,114 @@ export class DataEngine {
         }
     }
 
+    private rollRarity(): Rarity {
+        const rand = Math.random();
+        if (rand < 0.5) return 'Common';
+        if (rand < 0.75) return 'Uncommon';
+        if (rand < 0.9) return 'Rare';
+        if (rand < 0.98) return 'Epic';
+        return 'Legendary';
+    }
+
+    private getRarityScalar(rarity: Rarity): number {
+        switch (rarity) {
+            case 'Common': return 1.0;
+            case 'Uncommon': return 1.2;
+            case 'Rare': return 1.5;
+            case 'Epic': return 2.0;
+            case 'Legendary': return 3.0;
+        }
+    }
+
     /**
      * Generate a fresh shop draft. Called after a tournament cut or on reroll.
      * Pass isReroll=true to preserve the reroll counter.
      */
     generateShopDraft(isReroll = false) {
         if (!isReroll) {
-            this.state.shopRerollsLeft = 2;
+            this.state.currentRerollCost = 10;
+            this.state.blocksBoughtThisSession = 0;
+            this.state.lastGambleResult = null;
         }
-        this.state.lastGambleResult = null;
 
         const items: ShopDraftItem[] = [];
 
         // 1 random unowned club
         const availableClubs = DRAFTABLE_CLUBS.filter(c => !this.state.inventoryClubs.includes(c.id));
         [...availableClubs].sort(() => 0.5 - Math.random()).slice(0, 1).forEach(club => {
-            items.push({ id: club.id, name: club.name, description: club.description, price: club.cost, type: 'club', ref: club });
+            const rarity = this.rollRarity();
+            const scalar = this.getRarityScalar(rarity);
+            items.push({ id: club.id, name: `${rarity} ${club.name}`, description: club.description, price: Math.floor(club.cost * scalar), type: 'club', rarity, ref: { ...club, powerScalar: club.powerScalar * scalar } });
         });
 
         // 1 random unowned sleeve
         const availableSleeves = DRAFTABLE_SLEEVES.filter(s => !this.state.inventorySleeves.includes(s.id));
         [...availableSleeves].sort(() => 0.5 - Math.random()).slice(0, 1).forEach(sleeve => {
-            items.push({ id: sleeve.id, name: sleeve.name, description: sleeve.description, price: sleeve.cost, type: 'sleeve', ref: sleeve });
+            const rarity = this.rollRarity();
+            const scalar = this.getRarityScalar(rarity);
+            items.push({ id: sleeve.id, name: `${rarity} ${sleeve.name}`, description: sleeve.description, price: Math.floor(sleeve.cost * scalar), type: 'sleeve', rarity, ref: { ...sleeve, elasticity: Math.min(1.0, sleeve.elasticity * (1 + (scalar - 1) * 0.1)) } });
         });
 
-        // 1 random block
-        [...DRAFTABLE_BLOCKS].sort(() => 0.5 - Math.random()).slice(0, 1).forEach(block => {
-            items.push({
-                id: `block_${block.tileId}`,
-                name: block.name,
-                description: block.description,
-                price: block.cost,
-                type: 'block',
-                ref: block
-            });
-        });
+        if (isReroll) {
+            // Keep existing non-equipment items
+            const preservedItems = this.state.shopDraft.filter(item => item.type !== 'club' && item.type !== 'sleeve');
+            this.state.shopDraft = [...items, ...preservedItems];
+        } else {
+            // Generate Block and Specials
+            // 1 random block (if none bought this session)
+            if (this.state.blocksBoughtThisSession === 0) {
+                [...DRAFTABLE_BLOCKS].sort(() => 0.5 - Math.random()).slice(0, 1).forEach(block => {
+                    let rarity: Rarity = 'Common';
+                    if (block.tileId === 6) rarity = 'Uncommon';
+                    else if (block.tileId === 8 || block.tileId === 9) rarity = 'Rare';
+                    else if (block.tileId >= 12 && block.tileId <= 15) rarity = Math.random() < 0.5 ? 'Epic' : 'Legendary';
+                    const scalar = this.getRarityScalar(rarity);
 
-        // 1 gamble item
-        const gambleItems = SHOP_CONSUMABLE_POOL.filter(c => c.type === 'gamble');
-        if (gambleItems.length > 0) {
-            const randomGamble = gambleItems[Math.floor(Math.random() * gambleItems.length)];
-            items.push({ ...randomGamble, ref: null });
+                    items.push({
+                        id: `block_${block.tileId}`,
+                        name: `${rarity} ${block.name}`,
+                        description: block.description,
+                        price: Math.floor(block.cost * scalar),
+                        type: 'block',
+                        rarity,
+                        ref: block
+                    });
+                });
+            }
+
+            // 1 gamble item
+            const gambleItems = SHOP_CONSUMABLE_POOL.filter(c => c.type === 'gamble');
+            if (gambleItems.length > 0) {
+                const randomGamble = gambleItems[Math.floor(Math.random() * gambleItems.length)];
+                items.push({ ...randomGamble, ref: null });
+            }
+
+            // 1 instant buff or passive (non-gamble)
+            const buffItems = SHOP_CONSUMABLE_POOL.filter(c => c.type !== 'gamble');
+            if (buffItems.length > 0) {
+                const randomBuff = buffItems[Math.floor(Math.random() * buffItems.length)];
+                if (randomBuff.type === 'passive') {
+                    const rarity = this.rollRarity();
+                    const scalar = this.getRarityScalar(rarity);
+                    items.push({ ...randomBuff, name: `${rarity} ${randomBuff.name}`, price: Math.floor(randomBuff.price * scalar), rarity, ref: null });
+                } else {
+                    items.push({ ...randomBuff, ref: null });
+                }
+            }
+
+            this.state.shopDraft = items;
         }
-
-        // 1 instant buff (non-gamble)
-        const buffItems = SHOP_CONSUMABLE_POOL.filter(c => c.type !== 'gamble');
-        if (buffItems.length > 0) {
-            const randomBuff = buffItems[Math.floor(Math.random() * buffItems.length)];
-            items.push({ ...randomBuff, ref: null });
-        }
-
-        this.state.shopDraft = items;
     }
 
     /**
-     * Reroll the shop draft. Uses a free reroll if available, otherwise costs $25.
+     * Reroll the shop draft. Costs money and increases each time.
      */
     rerollShopDraft(): boolean {
-        const REROLL_COST = 25;
-        if (this.state.shopRerollsLeft > 0) {
-            this.state.shopRerollsLeft--;
-        } else {
-            if (this.state.money < REROLL_COST) return false;
-            this.state.money -= REROLL_COST;
-        }
+        const cost = this.state.currentRerollCost;
+        if (this.state.money < cost) return false;
+        
+        this.state.money -= cost;
+        this.state.currentRerollCost += 10;
         this.generateShopDraft(true);
         return true;
     }
@@ -400,6 +447,27 @@ export class DataEngine {
             this.state.money -= item.price;
             const block = item.ref;
             this.state.blockInventory[block.tileId] = (this.state.blockInventory[block.tileId] || 0) + 1;
+            this.state.blocksBoughtThisSession++;
+            this.state.shopDraft.splice(idx, 1);
+            return true;
+        }
+
+        if (item.type === 'passive') {
+            this.state.money -= item.price;
+            const baseBuff = PASSIVE_BUFF_POOL[Math.floor(Math.random() * PASSIVE_BUFF_POOL.length)];
+            const rarity = item.rarity || 'Common';
+            const scalar = this.getRarityScalar(rarity);
+
+            this.state.passiveBuffs.push({
+                ...baseBuff,
+                rarity,
+                baseYardsBonus: baseBuff.baseYardsBonus ? baseBuff.baseYardsBonus * scalar : undefined,
+                wallBounceMultiplierBonus: baseBuff.wallBounceMultiplierBonus ? baseBuff.wallBounceMultiplierBonus * scalar : undefined,
+                sandRoughPenaltyReduction: baseBuff.sandRoughPenaltyReduction ? baseBuff.sandRoughPenaltyReduction * scalar : undefined,
+                cashPerHole: baseBuff.cashPerHole ? Math.floor(baseBuff.cashPerHole * scalar) : undefined,
+                projectionRayLengthBonus: baseBuff.projectionRayLengthBonus ? baseBuff.projectionRayLengthBonus * scalar : undefined
+            });
+
             this.state.shopDraft.splice(idx, 1);
             return true;
         }
@@ -439,7 +507,8 @@ export class DataEngine {
 
     /** Place a block from inventory onto the active hole grid */
     placeBlock(r: number, c: number, tileId: number): boolean {
-        const count = this.state.blockInventory[tileId] || 0;
+        const invTileId = (tileId >= 12 && tileId <= 15) ? 12 : tileId;
+        const count = this.state.blockInventory[invTileId] || 0;
         if (count <= 0) return false;
 
         const baseMap = TOURNAMENT_DATA[this.state.currentTournamentIndex].holes[this.state.currentHoleIndex].map;
@@ -467,7 +536,7 @@ export class DataEngine {
             originalTileId: baseTile
         });
 
-        this.state.blockInventory[tileId]--;
+        this.state.blockInventory[invTileId]--;
         return true;
     }
 
@@ -479,7 +548,8 @@ export class DataEngine {
         const block = this.state.placedBlocks[idx];
         this.state.placedBlocks.splice(idx, 1);
 
-        this.state.blockInventory[block.tileId] = (this.state.blockInventory[block.tileId] || 0) + 1;
+        const invTileId = (block.tileId >= 12 && block.tileId <= 15) ? 12 : block.tileId;
+        this.state.blockInventory[invTileId] = (this.state.blockInventory[invTileId] || 0) + 1;
         return true;
     }
 
@@ -487,7 +557,8 @@ export class DataEngine {
     reclaimAllPlacedBlocks() {
         if (!this.state.placedBlocks) return;
         for (const block of this.state.placedBlocks) {
-            this.state.blockInventory[block.tileId] = (this.state.blockInventory[block.tileId] || 0) + 1;
+            const invTileId = (block.tileId >= 12 && block.tileId <= 15) ? 12 : block.tileId;
+            this.state.blockInventory[invTileId] = (this.state.blockInventory[invTileId] || 0) + 1;
         }
         this.state.placedBlocks = [];
     }

@@ -34,6 +34,8 @@ export interface StrokeFrame {
     clubUsedId: string;
 }
 
+export type Rarity = 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary';
+
 export interface ClubModifier {
     id: string;
     name: string;
@@ -41,6 +43,7 @@ export interface ClubModifier {
     clubType: 'Driver' | 'Iron' | 'Wedge' | 'Putter';
     powerScalar: number;
     cost: number;
+    rarity?: Rarity;
     hooks?: {
         onAddress?: (frame: StrokeFrame) => void;
         onFrameTick?: (ball: BallEntity, frame: StrokeFrame) => void;
@@ -56,7 +59,22 @@ export interface SleeveModifier {
     elasticity: number;
     windImmunity: boolean;
     cost: number;
+    rarity?: Rarity;
 }
+
+export interface PassiveBuff {
+    id: string;
+    name: string;
+    description: string;
+    rarity: Rarity;
+    // Multipliers or additions for various stats
+    baseYardsBonus?: number;
+    wallBounceMultiplierBonus?: number;
+    sandRoughPenaltyReduction?: number; // e.g., 0.1 means adds 0.1 to lie modifier
+    cashPerHole?: number;
+    projectionRayLengthBonus?: number;
+}
+
 
 export interface ConsumableItem {
     id: string;
@@ -102,7 +120,8 @@ export interface ShopDraftItem {
     name: string;
     description: string;
     price: number;
-    type: 'club' | 'sleeve' | 'mulligan' | 'stroke_boost' | 'cash_boost' | 'gamble' | 'block';
+    type: 'club' | 'sleeve' | 'mulligan' | 'stroke_boost' | 'cash_boost' | 'gamble' | 'block' | 'passive';
+    rarity?: Rarity;
     /** For mulligan: charges granted. For stroke_boost: strokes granted. For cash_boost: gold received. For gamble: win amount. */
     amount?: number;
     ref: any;
@@ -146,8 +165,12 @@ export interface GameState {
     tournamentResults: TournamentResult[];
     /** Extra strokes purchased from shop (applied on next tournament start) */
     pendingExtraStrokes: number;
-    /** Free rerolls remaining for the current shop session */
-    shopRerollsLeft: number;
+    /** Current cost of the shop reroll */
+    currentRerollCost: number;
+    /** Whether a block has been purchased this shop session */
+    blocksBoughtThisSession: number;
+    /** List of acquired passive buffs */
+    passiveBuffs: PassiveBuff[];
     /** Set after a gamble resolves so the UI can display the outcome */
     lastGambleResult: { won: boolean; amount: number } | null;
     /** Whether the shop UI is collapsed/hidden in the locker room */

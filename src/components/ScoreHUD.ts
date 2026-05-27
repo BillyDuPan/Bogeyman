@@ -83,11 +83,9 @@ export class ScoreHUD {
                 </div>
 
                 <!-- Spirit Ball Sleeve Switcher -->
-                <div class="hud-block">
-                    <div class="hud-title">Spirit Ball</div>
-                    <div id="hud-ball-name" class="hud-ball-name">Hollow Dimple</div>
-                    <div id="hud-ball-stat" class="hud-ball-stat">Elasticity 0.85</div>
-                    <div id="sleeve-switcher" class="sleeve-switcher"></div>
+                <div class="hud-block" style="flex-grow: 1; display: flex; flex-direction: column;">
+                    <div class="hud-title" style="margin-bottom: 6px;">Spirit Ball</div>
+                    <div id="sleeve-switcher" class="club-grid"></div>
                 </div>
 
                 <!-- Placeable Map Upgrades -->
@@ -313,27 +311,28 @@ export class ScoreHUD {
         }
 
         // Spirit Ball sleeve display & switcher
-        const ballNameElem = document.getElementById('hud-ball-name');
-        const ballStatElem = document.getElementById('hud-ball-stat');
         const switcherElem = document.getElementById('sleeve-switcher');
-        if (ballNameElem) ballNameElem.textContent = state.activeSleeve.name;
-        if (ballStatElem) {
-            const statParts: string[] = [`E: ${state.activeSleeve.elasticity.toFixed(2)}`];
-            if (state.activeSleeve.windImmunity) statParts.push('Wind Immune');
-            ballStatElem.textContent = statParts.join(' · ');
-        }
-        if (switcherElem && state.inventorySleeves.length > 1) {
-            switcherElem.style.display = 'flex';
+        if (switcherElem && state.inventorySleeves.length > 0) {
+            switcherElem.style.display = 'grid';
             const html = state.inventorySleeves.map(id => {
                 const sleeve = DRAFTABLE_SLEEVES.find(s => s.id === id);
                 if (!sleeve) return '';
-                const isActive = state.activeSleeve.id === id;
+                const isSelected = state.activeSleeve.id === id;
+                const classStr = isSelected ? 'club-grid-item selected' : 'club-grid-item';
                 const abbr = sleeve.name.split(' ').map(w => w[0]).join('').slice(0, 3).toUpperCase();
-                return `<div class="sleeve-chip${isActive ? ' active' : ''}" data-sleeve-id="${id}" title="${sleeve.name}">${abbr}</div>`;
+                return `
+                    <div class="${classStr}" data-sleeve-id="${id}">
+                        <span class="club-abbr">${abbr}</span>
+                        <div class="club-tooltip">
+                            <span class="club-tooltip-name">${sleeve.name}</span>
+                            <span class="club-tooltip-desc">${sleeve.description}</span>
+                            <span class="club-tooltip-power">E: ${sleeve.elasticity.toFixed(2)}${sleeve.windImmunity ? ' | Wind Immune' : ''}</span>
+                        </div>
+                    </div>`;
             }).join('');
             if (switcherElem.innerHTML !== html) {
                 switcherElem.innerHTML = html;
-                switcherElem.querySelectorAll('.sleeve-chip').forEach(chip => {
+                switcherElem.querySelectorAll('.club-grid-item').forEach(chip => {
                     chip.addEventListener('click', () => {
                         const id = chip.getAttribute('data-sleeve-id');
                         if (id && this.onSleeveSelect) this.onSleeveSelect(id);
@@ -408,31 +407,47 @@ export class ScoreHUD {
         // Re-populate block inventory upgrades list
         const blockListElem = document.getElementById('block-inventory-list');
         if (blockListElem) {
+            let diagChar = '◤';
+            if (state.buildModeTileId === 13) diagChar = '◥';
+            if (state.buildModeTileId === 14) diagChar = '◣';
+            if (state.buildModeTileId === 15) diagChar = '◢';
+
             const BLOCK_INFOS = [
                 { tileId: 8, char: '🔴', name: 'Bumper' },
                 { tileId: 9, char: '🟣', name: 'Gate' },
                 { tileId: 6, char: '🟢', name: 'Green' },
-                { tileId: 1, char: '🟩', name: 'Fairway' }
+                { tileId: 1, char: '🟩', name: 'Fairway' },
+                { tileId: 12, char: diagChar, name: 'Diagonal Wall' }
             ];
 
-            const htmlBuffer = BLOCK_INFOS.map(info => {
-                const count = state.blockInventory[info.tileId] || 0;
-                const isSelected = state.buildModeTileId === info.tileId;
-                const activeClass = isSelected ? 'active' : '';
-                const disabledClass = (count > 0 || isSelected) ? '' : 'disabled';
+            const activeBlocks = BLOCK_INFOS.filter(info => (state.blockInventory[info.tileId] || 0) > 0 || (info.tileId === 12 && state.buildModeTileId !== null && state.buildModeTileId >= 12 && state.buildModeTileId <= 15) || state.buildModeTileId === info.tileId);
 
-                return `
-                    <div class="block-chip ${activeClass} ${disabledClass}" data-tile-id="${info.tileId}" title="${info.name}">
-                        <span class="block-chip-icon">${info.char}</span>
-                        <span class="block-chip-count">x${count}</span>
-                    </div>
-                `;
-            }).join('');
+            let htmlBuffer = '';
+            if (activeBlocks.length === 0) {
+                htmlBuffer = `<div style="padding: 10px; color: #666; font-size: 10px; font-family: var(--font-ui); text-align: center; width: 100%;">No blocks owned.<br>Buy some in the Pro Shop!</div>`;
+            } else {
+                htmlBuffer = activeBlocks.map(info => {
+                    const count = state.blockInventory[info.tileId] || 0;
+                    const isSelected = state.buildModeTileId === info.tileId || (info.tileId === 12 && state.buildModeTileId !== null && state.buildModeTileId >= 12 && state.buildModeTileId <= 15);
+                    const classStr = isSelected ? 'club-grid-item selected' : 'club-grid-item';
+    
+                    return `
+                        <div class="${classStr}" data-tile-id="${isSelected ? state.buildModeTileId : info.tileId}" style="flex-direction: column;">
+                            <span class="block-chip-icon">${info.char}</span>
+                            <span class="block-chip-count">x${count}</span>
+                            <div class="club-tooltip">
+                                <span class="club-tooltip-name">${info.name}</span>
+                                <span class="club-tooltip-desc">Placeable Map Upgrade${info.tileId === 12 ? '<br><span style="color:var(--color-gold);">Press R to rotate!</span>' : ''}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
 
             blockListElem.innerHTML = htmlBuffer;
 
             // Attach listeners to block inventory chips
-            blockListElem.querySelectorAll('.block-chip').forEach(chip => {
+            blockListElem.querySelectorAll('.club-grid-item').forEach(chip => {
                 chip.addEventListener('click', () => {
                     const tileId = parseInt(chip.getAttribute('data-tile-id') || '-1');
                     if (tileId !== -1) {

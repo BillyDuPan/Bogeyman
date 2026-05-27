@@ -13,9 +13,13 @@ export const TERRAIN_DEFS: Record<number, TerrainType> = {
     9: { id: 9, name: 'Multiplier Gate', friction: 0.96, lieModifier: 1.0, color: '#82589f', description: 'Doubles current shot multiplier!' },
     10: { id: 10, name: 'Cursed Cobblestone', friction: 0.92, lieModifier: 0.8, color: '#636e72', description: 'Cursed stone path (0.8x Lie)' },
     11: { id: 11, name: 'Bone Dust', friction: 0.72, lieModifier: 0.3, color: '#dfe6e9', description: 'Ashen bone powder (0.3x Lie!)' },
+    12: { id: 12, name: 'Diagonal Wall (TL)', friction: 1.00, lieModifier: 1.0, color: '#60a3bc', description: 'Bounces ball (+0.5x Mult)' },
+    13: { id: 13, name: 'Diagonal Wall (TR)', friction: 1.00, lieModifier: 1.0, color: '#60a3bc', description: 'Bounces ball (+0.5x Mult)' },
+    14: { id: 14, name: 'Diagonal Wall (BL)', friction: 1.00, lieModifier: 1.0, color: '#60a3bc', description: 'Bounces ball (+0.5x Mult)' },
+    15: { id: 15, name: 'Diagonal Wall (BR)', friction: 1.00, lieModifier: 1.0, color: '#60a3bc', description: 'Bounces ball (+0.5x Mult)' },
 };
 
-const CHAR_MAP: Record<string, number> = {
+export const CHAR_MAP: Record<string, number> = {
     'W': 7,
     'T': 0,
     'F': 1,
@@ -28,6 +32,10 @@ const CHAR_MAP: Record<string, number> = {
     'X': 9,
     'K': 10,
     'D': 11,
+    '1': 12, // TL
+    '2': 13, // TR
+    '3': 14, // BL
+    '4': 15, // BR
 };
 
 function parseMap(layout: string): number[][] {
@@ -63,56 +71,56 @@ export const TOURNAMENT_DATA: TournamentData[] = [
         rewardCash: 120,
         holes: [
             {
-                name: 'Coffin Corner',
+                name: 'Straight Shot',
                 par: 3,
                 map: parseMap(`
                     WWWWWWWWWWWWWWWW
                     WFFFFFFFFFFFFFFW
-                    WFTFFFFFFFFFFOFW
                     WFFFFFFFFFFFFFFW
-                    WWWWWWWWWWFFFFFW
-                    WWWWWWWWWWFFFFFW
-                    WWWWWWWWWWFFFFFW
-                    WWWWWWWWWWFFFFFW
-                    WWWWWWWWWWGGGGGW
-                    WWWWWWWWWWGGCGGW
-                    WWWWWWWWWWGGGGGW
+                    WFTFFFFFFFFOFFFW
+                    WFFFFFFFFFFFFFFW
+                    WFFFFFFFFFFFFFFW
+                    WFFFFFFFFGGGGGGW
+                    WFFFFFFFFGGGGGGW
+                    WFFFFFFFFGGGGGGW
+                    WFFFFFFFFGGGCGGW
+                    WFFFFFFFFGGGGGGW
                     WWWWWWWWWWWWWWWW
                 `)
             },
             {
-                name: 'Ghost Trail',
-                par: 4,
+                name: 'The L-Bend',
+                par: 3,
                 map: parseMap(`
                     WWWWWWWWWWWWWWWW
-                    WWWWWWWWWWGGGGGW
-                    WWWWWWWWWWGGCGGW
-                    WWWWWWWWWWGGGGGW
-                    WWWWWWWWWXGGGGGW
-                    WWWWWWFFFFXWWWWW
-                    WWWWWWFFFFFWWWWW
-                    WFFFFFFFFWWWWWWW
-                    WFFFFFFFFWWWWWWW
-                    WFTFFFFFFWWWWWWW
-                    WFFFFFFFFWWWWWWW
+                    WFFFFFFFFFF2WWWW
+                    WFTFFFFFFOFF2WWW
+                    WFFFFFFFFFFFF2WW
+                    WWWWWWWW3FFFFFWW
+                    WWWWWWWWWFFFFFWW
+                    WWWWWWWWWFFFFFWW
+                    WWWWWWWWWGGOGGWW
+                    WWWWWWWWWGGGGGWW
+                    WWWWWWWWWGGCGGWW
+                    WWWWWWWWWGGGGGWW
                     WWWWWWWWWWWWWWWW
                 `)
             },
             {
-                name: 'The Boomerang',
+                name: 'U-Turn',
                 par: 4,
                 map: parseMap(`
                     WWWWWWWWWWWWWWWW
-                    WFFFFFFFFFFFFFFW
-                    WFTFFFFFFFFFFOFW
-                    WFFFFFFFFFFFFFFW
-                    WWWWWWWWWWFFFFFW
-                    WWWWWWWWWWFFFFFW
+                    WFFFFFFFFFF2WWWW
+                    WFTFFFFFFOFF2WWW
                     WFFFFFFFFFFFFWWW
-                    WFFFFFFFFFFFFWWW
-                    WFGGGGGWWWWWWWWW
-                    WFGGCGGWWWWWWWWW
-                    WFGGGGGWWWWWWWWW
+                    WWWWWWWW3FFFFWWW
+                    WWWWWWWWWFFFFWWW
+                    WWWWWWWWWFFFFWWW
+                    WWWWWWWW1FFFFWWW
+                    WGGGGGFFFFOFFWWW
+                    WGCGGOFFFFFF4WWW
+                    WGGGGGFFFFF4WWWW
                     WWWWWWWWWWWWWWWW
                 `)
             },

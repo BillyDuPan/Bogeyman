@@ -49,14 +49,32 @@ export function showLockerRoom(_activeTab: 'loadout' | 'shop' | 'tourmap' = 'loa
 
 
 
+    let buff_base_yardage = 0;
+    let buff_wall_bounce_mult = 0;
+    let buff_sand_rough_forgiveness = 0;
+    let buff_passive_cash = 0;
+    let buff_projection_ray = 0;
+
+    state.passiveBuffs.forEach(buff => {
+        if (buff.id === 'buff_base_yardage') buff_base_yardage += buff.baseYardsBonus || 0;
+        if (buff.id === 'buff_wall_bounce_mult') buff_wall_bounce_mult += buff.wallBounceMultiplierBonus || 0;
+        if (buff.id === 'buff_sand_rough_forgiveness') buff_sand_rough_forgiveness += buff.sandRoughPenaltyReduction || 0;
+        if (buff.id === 'buff_passive_cash') buff_passive_cash += buff.cashPerHole || 0;
+        if (buff.id === 'buff_projection_ray') buff_projection_ray += buff.projectionRayLengthBonus || 0;
+    });
+
+    const statRow = (label: string, baseStr: string, buffStr: string, isBuffed: boolean) => `
+        <div style="display:flex; justify-content: space-between; margin-bottom: 4px;">
+            <span style="color:var(--color-base);">${label}</span>
+            <span>${baseStr} <span style="color: ${isBuffed ? 'var(--color-gold)' : '#555'}">${buffStr}</span></span>
+        </div>
+    `;
+
     // ── Build Shop Panel ──
     const gambleResult = state.lastGambleResult;
     state.lastGambleResult = null; // clear after reading so it doesn't persist
 
-    const canReroll = state.shopRerollsLeft > 0 || state.money >= 25;
-    const rerollLabel = state.shopRerollsLeft > 0
-        ? `🎲 REROLL (${state.shopRerollsLeft} FREE)`
-        : `🎲 REROLL ($25)`;
+    const canReroll = state.money >= state.currentRerollCost;
 
     const TYPE_META: Record<string, { icon: string; label: string; cls: string }> = {
         club: { icon: '💀', label: 'SPECIAL CLUB', cls: 'club' },
@@ -66,20 +84,10 @@ export function showLockerRoom(_activeTab: 'loadout' | 'shop' | 'tourmap' = 'loa
         cash_boost: { icon: '💰', label: 'GOLD BOOST', cls: 'gold' },
         gamble: { icon: '🎲', label: 'COIN WAGER', cls: 'gamble' },
         block: { icon: '🧱', label: 'BLOCK', cls: 'block' },
+        passive: { icon: '📦', label: 'MYSTERY BOX', cls: 'passive' }
     };
 
-    const shopHTML = hasShopDraft ? `
-        <div class="lr-shop">
-            <div class="lr-shop-hdr">
-                <span class="lr-shop-hdr-title">SHOP: CURSED RELICS</span>
-                ${gambleResult !== null ? `
-                    <div class="lr-gamble-result ${gambleResult.won ? 'lr-gamble-result--win' : 'lr-gamble-result--lose'}">
-                        ${gambleResult.won ? `🎰 WON $${gambleResult.amount}!` : '💀 LOST THE WAGER'}
-                    </div>
-                ` : ''}
-            </div>
-            <div class="lr-shop-list">
-                ${state.shopDraft.map((item, idx) => {
+    const renderItem = (item: any, idx: number) => {
         const isOwnedClub = item.type === 'club' && state.inventoryClubs.includes(item.id);
         const isOwnedSleeve = item.type === 'sleeve' && state.inventorySleeves.includes(item.id);
         const owned = isOwnedClub || isOwnedSleeve;
@@ -88,34 +96,72 @@ export function showLockerRoom(_activeTab: 'loadout' | 'shop' | 'tourmap' = 'loa
         const meta = TYPE_META[item.type] ?? { icon: '?', label: item.type, cls: '' };
 
         let hint = '';
-        if (item.type === 'cash_boost')
-            hint = `Pay $${item.price} → Receive $${item.amount} <em>(+$${(item.amount ?? 0) - item.price} net)</em>`;
-        else if (item.type === 'gamble')
-            hint = `50%: WIN $${item.amount} | 50%: LOSE $${item.price}`;
-        else if (item.type === 'mulligan' && (item.amount ?? 1) > 1)
-            hint = `Grants +${item.amount} charges`;
-        else if (item.type === 'stroke_boost' && (item.amount ?? 1) > 1)
-            hint = `Grants +${item.amount} strokes`;
+        if (item.type === 'cash_boost') hint = `Pay $${item.price} → Receive $${item.amount}`;
+        else if (item.type === 'gamble') hint = `50%: WIN $${item.amount} | 50%: LOSE $${item.price}`;
+        else if (item.type === 'mulligan' && (item.amount ?? 1) > 1) hint = `Grants +${item.amount} charges`;
+        else if (item.type === 'stroke_boost' && (item.amount ?? 1) > 1) hint = `Grants +${item.amount} strokes`;
 
         const btnLabel = owned ? 'OWNED' : !canAfford ? 'NEED GOLD' : item.type === 'gamble' ? 'ROLL BONES' : `BUY ($${item.price})`;
-
-        // If it's a gamble or buff, we make it full width, otherwise it could be a smaller card
-        const isFullWidth = item.type === 'gamble' || item.type === 'cash_boost' || item.type === 'stroke_boost' || item.type === 'mulligan';
+        const rarityClass = item.rarity ? `lr-shop-item-rarity--${item.rarity.toLowerCase()}` : '';
 
         return `
-                        <div class="lr-shop-item ${isFullWidth ? 'lr-shop-item--full' : 'lr-shop-item--card'} ${owned ? 'lr-shop-item--owned' : ''} ${!canAfford && !owned ? 'lr-shop-item--broke' : ''}">
-                            <div class="lr-shop-item-top">
-                                <span class="lr-shop-item-icon">${meta.icon}</span>
-                                <span class="lr-shop-item-name">${item.name}</span>
-                            </div>
-                            <div class="lr-shop-item-desc">${item.description}</div>
-                            ${hint ? `<div class="lr-shop-item-hint">${hint}</div>` : ''}
-                            <button class="lr-shop-card-btn" data-draft-idx="${idx}" ${buyable ? '' : 'disabled'}>
-                                ${btnLabel}
-                            </button>
-                        </div>
-                    `;
-    }).join('')}
+            <div class="lr-shop-item lr-shop-item--card ${owned ? 'lr-shop-item--owned' : ''} ${!canAfford && !owned ? 'lr-shop-item--broke' : ''} ${rarityClass}">
+                <div class="lr-shop-item-top">
+                    <img src="/images/shop/item_${item.type}.png" class="lr-shop-item-img" alt="${item.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';" />
+                    <span class="lr-shop-item-icon" style="display:none;">${meta.icon}</span>
+                    <span class="lr-shop-item-name">${item.name}</span>
+                </div>
+                <div class="lr-shop-item-desc">${item.description}</div>
+                ${hint ? `<div class="lr-shop-item-hint">${hint}</div>` : ''}
+                <button class="lr-shop-card-btn" data-draft-idx="${idx}" data-item-type="${item.type}" ${buyable ? '' : 'disabled'}>
+                    ${btnLabel}
+                </button>
+            </div>
+        `;
+    };
+
+    const blockItems = state.shopDraft.map((item, idx) => ({item, idx})).filter(x => x.item.type === 'block');
+    const equipItems = state.shopDraft.map((item, idx) => ({item, idx})).filter(x => x.item.type === 'club' || x.item.type === 'sleeve');
+    const specialItems = state.shopDraft.map((item, idx) => ({item, idx})).filter(x => x.item.type !== 'block' && x.item.type !== 'club' && x.item.type !== 'sleeve');
+
+    const shopHTML = hasShopDraft ? `
+        <div class="lr-col-title">SHOP: CURSED RELICS</div>
+        ${gambleResult !== null ? `
+            <div class="lr-gamble-result ${gambleResult.won ? 'lr-gamble-result--win' : 'lr-gamble-result--lose'}" style="margin-bottom: 10px;">
+                ${gambleResult.won ? `🎰 WON $${gambleResult.amount}!` : '💀 LOST THE WAGER'}
+            </div>
+        ` : ''}
+
+        <div class="lr-carousel-box" style="margin-bottom: 15px;">
+            <div class="lr-carousel-hdr">EQUIPMENT & BLOCKS</div>
+            <div class="lr-carousel-body" style="padding: 10px; display: flex; gap: 15px;">
+                <div style="flex: 1; display: flex; flex-direction: column; border-right: 2px dashed #444; padding-right: 15px;">
+                    <div style="font-size: 0.7em; color: var(--color-base); margin-bottom: 6px; font-family: var(--font-arcade); text-align: center;">BLOCK SHOP</div>
+                    <div style="flex: 1; display: flex;">
+                        ${blockItems.length > 0 ? blockItems.map(x => renderItem(x.item, x.idx)).join('') : '<div style="margin: auto; color: #555; font-size: 0.8em;">SOLD OUT</div>'}
+                    </div>
+                </div>
+
+                <div style="flex: 2; display: flex; flex-direction: column;">
+                    <div style="font-size: 0.7em; color: var(--color-gold); margin-bottom: 6px; font-family: var(--font-arcade); display: flex; justify-content: space-between; align-items: center;">
+                        <span>EQUIPMENT DRAFT</span>
+                        <button id="btn-shop-reroll-inner" class="screen-btn" style="font-size: 0.85em; padding: 2px 6px; min-height: 24px;" ${!canReroll ? 'disabled' : ''}>
+                           REROLL DRAFT ($${state.currentRerollCost})
+                        </button>
+                    </div>
+                    <div style="flex: 1; display: flex; gap: 8px;">
+                        ${equipItems.length > 0 ? equipItems.map(x => renderItem(x.item, x.idx)).join('') : ''}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="lr-carousel-box" style="flex: 1; display: flex; flex-direction: column;">
+            <div class="lr-carousel-hdr">CASINO & CURSES</div>
+            <div class="lr-carousel-body" style="padding: 10px; flex: 1; overflow-y: auto;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    ${specialItems.length > 0 ? specialItems.map(x => renderItem(x.item, x.idx)).join('') : '<div style="grid-column: 1 / -1; text-align: center; color: #555; font-size: 0.8em; padding: 10px;">SOLD OUT</div>'}
+                </div>
             </div>
         </div>
     ` : `
@@ -198,23 +244,19 @@ export function showLockerRoom(_activeTab: 'loadout' | 'shop' | 'tourmap' = 'loa
                         </div>
                     </div>
 
-                    <div class="lr-buff-section">
-                        <div class="lr-buff-hdr">PASSIVE BUFFS</div>
-                        <div class="lr-buff-list">
-                            <div class="lr-buff-row">
-                                <span>WIND RESISTANCE:</span>
-                                <span>${state.activeSleeve.windImmunity ? 'IMMUNE' : '+0%'}</span>
-                            </div>
-                            <div class="lr-buff-row">
-                                <span>RE-ROLLS PER RUN:</span>
-                                <span>${state.shopRerollsLeft}</span>
-                            </div>
+                    <div class="lr-buff-section" style="flex: 1; display: flex; flex-direction: column;">
+                        <div class="lr-buff-hdr">PLAYER STATS</div>
+                        <div class="lr-buff-list" style="font-family: var(--font-arcade); font-size: 0.8em; line-height: 1.4; padding: 10px;">
+                            ${statRow('Mulligans:', String(state.mulligansLeft), '', false)}
+                            ${statRow('Club Power:', currentClub ? currentClub.powerScalar.toFixed(1) + 'x' : '1.0x', '', currentClub?.powerScalar !== 1)}
+                            ${statRow('Ball Bounce:', currentSleeve ? currentSleeve.elasticity.toFixed(2) : '0.85', '', currentSleeve?.elasticity !== 0.85)}
+                            ${statRow('Wind Resist:', currentSleeve?.windImmunity ? 'YES' : 'NO', '', currentSleeve?.windImmunity || false)}
+                            ${statRow('Base Yardage:', '250', '(+' + buff_base_yardage + ')', buff_base_yardage > 0)}
+                            ${statRow('Wall Bounce:', '+0.5x', '(+' + buff_wall_bounce_mult.toFixed(1) + ')', buff_wall_bounce_mult > 0)}
+                            ${statRow('Lie Forgiven:', '0.0x', '(+' + buff_sand_rough_forgiveness.toFixed(1) + ')', buff_sand_rough_forgiveness > 0)}
+                            ${statRow('Passive Cash:', '$0', '(+$' + buff_passive_cash + ')', buff_passive_cash > 0)}
+                            ${statRow('Aim Ray Lens:', '1.0x', '(+' + buff_projection_ray.toFixed(1) + ')', buff_projection_ray > 0)}
                         </div>
-                    </div>
-
-                    <div class="lr-buff-section">
-                        <div class="lr-buff-hdr">MULLIGAN CHARGES</div>
-                        <div class="lr-buff-charges">${state.mulligansLeft}</div>
                     </div>
                 </div>
 
@@ -227,9 +269,6 @@ export function showLockerRoom(_activeTab: 'loadout' | 'shop' | 'tourmap' = 'loa
             <!-- Absolute Buttons -->
             <button id="btn-quit-run" class="screen-btn lr-abs-btn lr-btn-bl">QUIT RUN</button>
             <button id="btn-tee-off" class="screen-btn lr-abs-btn lr-btn-bc">GO TO TOUR</button>
-            <button id="btn-shop-reroll" class="screen-btn lr-abs-btn lr-btn-br" ${!canReroll || !hasShopDraft ? 'disabled' : ''}>
-                SHOP ACTIONS<br/>${rerollLabel}
-            </button>
         </div>
     `;
 
@@ -274,12 +313,27 @@ export function showLockerRoom(_activeTab: 'loadout' | 'shop' | 'tourmap' = 'loa
     overlayContainer.querySelectorAll('.lr-shop-card-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const idx = parseInt(btn.getAttribute('data-draft-idx') || '-1');
+            const type = btn.getAttribute('data-item-type') || '';
             if (idx >= 0) {
+                const prevPassivesCount = state.passiveBuffs.length;
                 const success = dataEngine.buyDraftItem(idx);
                 if (success) {
                     audio.playGate();
                     hud.update(state);
-                    showLockerRoom();
+                    
+                    if (type === 'passive' && state.passiveBuffs.length > prevPassivesCount) {
+                        const newBuff = state.passiveBuffs[state.passiveBuffs.length - 1];
+                        showMysteryBoxUnboxing(newBuff, () => {
+                            showLockerRoom();
+                        });
+                    } else if (type === 'gamble' && state.lastGambleResult !== null) {
+                        const gamble = state.lastGambleResult;
+                        showCoinToss(gamble.won, gamble.amount, () => {
+                            showLockerRoom();
+                        });
+                    } else {
+                        showLockerRoom();
+                    }
                 }
             }
         });
@@ -308,5 +362,104 @@ export function showLockerRoom(_activeTab: 'loadout' | 'shop' | 'tourmap' = 'loa
         appContent.style.opacity = '1.0';
         hud.update(dataEngine.getState());
         context?.showTitleScreen?.();
+    });
+}
+
+function showMysteryBoxUnboxing(buff: any, onComplete: () => void) {
+    if (!context) return;
+    
+    const popup = document.createElement('div');
+    popup.className = 'unboxing-overlay overlay-fullvp';
+    popup.innerHTML = `
+        <div class="unboxing-container">
+            <h2 class="unboxing-title">MYSTERY BOX OPENED!</h2>
+            <div class="unboxing-card-flip">
+                <div class="unboxing-card-inner">
+                    <div class="unboxing-card-front">?</div>
+                    <div class="unboxing-card-back lr-shop-item-rarity--${buff.rarity.toLowerCase()}">
+                        <img src="/images/shop/item_passive.png" class="lr-shop-item-img" alt="${buff.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+                        <div class="lr-shop-item-icon" style="display:none;">🌟</div>
+                        <div class="lr-shop-item-name">${buff.name}</div>
+                        <div class="lr-shop-item-desc" style="color:white;">${buff.description}</div>
+                        <div class="lr-shop-item-hint">${buff.rarity} Passive</div>
+                    </div>
+                </div>
+            </div>
+            <button class="screen-btn" id="btn-close-unboxing" style="display:none; margin-top:2em;">AWESOME!</button>
+        </div>
+    `;
+    context.overlayContainer.appendChild(popup);
+    
+    // Trigger animation
+    setTimeout(() => {
+        popup.querySelector('.unboxing-card-inner')?.classList.add('flipped');
+        audio.playBumper();
+        setTimeout(() => {
+            const btn = document.getElementById('btn-close-unboxing');
+            if (btn) btn.style.display = 'block';
+        }, 1000);
+    }, 800);
+
+    document.getElementById('btn-close-unboxing')?.addEventListener('click', () => {
+        audio.playTick();
+        popup.remove();
+        onComplete();
+    });
+}
+
+function showCoinToss(won: boolean, amount: number, onComplete: () => void) {
+    if (!context) return;
+    
+    const popup = document.createElement('div');
+    popup.className = 'unboxing-overlay overlay-fullvp';
+    popup.innerHTML = `
+        <style>
+        .coin-toss-flip {
+            width: 150px; height: 150px; margin: 0 auto; perspective: 1000px;
+        }
+        .coin-inner {
+            width: 100%; height: 100%; transition: transform 2s cubic-bezier(0.2, 0.8, 0.2, 1); transform-style: preserve-3d; position: relative;
+        }
+        .coin-inner.flipped-win { transform: rotateY(1800deg); }
+        .coin-inner.flipped-lose { transform: rotateY(1980deg); }
+        .coin-face {
+            width: 100%; height: 100%; position: absolute; backface-visibility: hidden; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: var(--font-arcade); font-size: 1.5em; border: 6px solid #fff;
+        }
+        .coin-front { background: gold; color: #000; border-color: #b8860b; box-shadow: inset 0 0 20px #b8860b; }
+        .coin-back { background: #333; color: #fff; transform: rotateY(180deg); border-color: #111; box-shadow: inset 0 0 20px #111; }
+        </style>
+        <div class="unboxing-container">
+            <h2 class="unboxing-title">TOSSING THE COIN...</h2>
+            <div class="coin-toss-flip">
+                <div class="coin-inner">
+                    <div class="coin-face coin-front">
+                        <div>WIN</div>
+                        <div style="font-size:0.6em;">+$${amount}</div>
+                    </div>
+                    <div class="coin-face coin-back">
+                        <div style="font-size:2em;">💀</div>
+                    </div>
+                </div>
+            </div>
+            <button class="screen-btn" id="btn-close-coin" style="display:none; margin-top:2em;">CONTINUE</button>
+        </div>
+    `;
+    context.overlayContainer.appendChild(popup);
+    
+    setTimeout(() => {
+        popup.querySelector('.coin-inner')?.classList.add(won ? 'flipped-win' : 'flipped-lose');
+        audio.playBumper();
+        setTimeout(() => {
+            const title = popup.querySelector('.unboxing-title');
+            if (title) title.textContent = won ? '🎰 YOU WON!' : '💀 YOU LOST!';
+            const btn = document.getElementById('btn-close-coin');
+            if (btn) btn.style.display = 'block';
+        }, 2200);
+    }, 100);
+
+    document.getElementById('btn-close-coin')?.addEventListener('click', () => {
+        audio.playTick();
+        popup.remove();
+        onComplete();
     });
 }

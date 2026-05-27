@@ -194,7 +194,11 @@ function init() {
                 hud.update(state);
             }
         },
-        onBlockSelect: (tileId) => { state.buildModeTileId = tileId; hud.update(state); },
+        onBlockSelect: (tileId) => { 
+            state.buildModeTileId = tileId; 
+            if (tileId === 12) showBillyTip();
+            hud.update(state); 
+        },
         onReclaimAll: () => {
             dataEngine.reclaimAllPlacedBlocks();
             state.buildModeTileId = null;
@@ -203,6 +207,60 @@ function init() {
             hud.update(state);
         }
     });
+
+    // ── Input Handling (Block Rotation) ──
+    window.addEventListener('keydown', (e) => {
+        if ((e.key === 'r' || e.key === 'R') && state.gameMode === 'play' && state.buildModeTileId !== null) {
+            if (state.buildModeTileId >= 12 && state.buildModeTileId <= 15) {
+                state.buildModeTileId = state.buildModeTileId === 15 ? 12 : state.buildModeTileId + 1;
+                audio.playTick();
+                hud.update(state);
+            }
+        }
+    });
+
+    let hasSeenDiagonalTip = false;
+    function showBillyTip() {
+        if (hasSeenDiagonalTip) return;
+        hasSeenDiagonalTip = true;
+        const tip = document.createElement('div');
+        tip.innerHTML = `<img id="billy-tip-img" src="/billy/1.png" style="width: 48px; height: 48px; margin-right: 12px; image-rendering: pixelated;"><div style="font-family: var(--font-ui); font-size: 14px; text-shadow: 1px 1px 0 #000; line-height: 1.4;"><b>Billy says:</b><br>Press <span style="color: var(--color-gold); font-family: var(--font-arcade);">R</span> to rotate diagonal blocks before placing them!</div>`;
+        tip.style.position = 'fixed';
+        tip.style.bottom = '20px';
+        tip.style.left = '50%';
+        tip.style.transform = 'translateX(-50%)';
+        tip.style.backgroundColor = 'rgba(21, 19, 26, 0.95)';
+        tip.style.border = '2px solid var(--border-neon)';
+        tip.style.padding = '12px 20px';
+        tip.style.borderRadius = '8px';
+        tip.style.display = 'flex';
+        tip.style.alignItems = 'center';
+        tip.style.color = '#fff';
+        tip.style.zIndex = '9999';
+        tip.style.boxShadow = '0 0 20px rgba(0, 210, 211, 0.4)';
+        document.body.appendChild(tip);
+
+        // Animate Billy talking for a few seconds
+        const imgEl = document.getElementById('billy-tip-img') as HTMLImageElement;
+        let animTicks = 0;
+        function animateTipMascot() {
+            if (animTicks > 20 || !document.getElementById('billy-tip-img')) {
+                if (imgEl) imgEl.src = "/billy/1.png";
+                return;
+            }
+            animTicks++;
+            const randFrame = Math.floor(Math.random() * 4) + 1;
+            imgEl.src = `/billy/${randFrame}.png`;
+            setTimeout(animateTipMascot, 60 + Math.random() * 120);
+        }
+        if (imgEl) animateTipMascot();
+
+        setTimeout(() => {
+            tip.style.transition = 'opacity 1s ease';
+            tip.style.opacity = '0';
+            setTimeout(() => tip.remove(), 1000);
+        }, 6000);
+    }
 
     // ── Settings Gear Modal ──
     const settingsBtn       = document.getElementById('btn-settings-toggle');

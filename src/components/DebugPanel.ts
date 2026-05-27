@@ -45,7 +45,11 @@ export function toggleDebugPanel() {
         <button id="db-win" class="debug-btn">Instant Settle (Sink)</button>
         <button id="db-cash" class="debug-btn">Add +$500 Cash</button>
         <button id="db-mulligan" class="debug-btn">Add +1 Mulligan</button>
+        <button id="db-blocks" class="debug-btn">Add +50x All Blocks</button>
         <button id="db-immune" class="debug-btn">Toggle Wind Resist</button>
+        <button id="db-next-hole" class="debug-btn">Skip Next Hole</button>
+        <button id="db-go-locker" class="debug-btn">Go to Locker</button>
+        <button id="db-unlock-locker" class="debug-btn">Force Unlock Locker Shop</button>
     `;
 
     document.body.appendChild(panel);
@@ -96,11 +100,44 @@ export function toggleDebugPanel() {
         canvas.spawnTextPop(256, 192, '+1 Mulligan Cheat!', 'var(--color-mult)');
     });
 
+    // ── Add blocks cheat ──
+    document.getElementById('db-blocks')?.addEventListener('click', () => {
+        const state = dataEngine.getState();
+        const blockIds = [8, 9, 6, 1, 12];
+        for (const id of blockIds) {
+            state.blockInventory[id] = (state.blockInventory[id] || 0) + 50;
+        }
+        hud.update(state);
+        canvas.spawnTextPop(256, 192, '+50x Blocks Cheat!', '#2ecc71');
+    });
+
     // ── Wind immunity toggle cheat ──
     document.getElementById('db-immune')?.addEventListener('click', () => {
         const state = dataEngine.getState();
         state.activeSleeve.windImmunity = !state.activeSleeve.windImmunity;
         hud.update(state);
         canvas.spawnTextPop(256, 192, `Wind Immunity: ${state.activeSleeve.windImmunity ? 'ON' : 'OFF'}`, 'var(--color-base)');
+    });
+
+    // ── Skip Next Hole cheat ──
+    document.getElementById('db-next-hole')?.addEventListener('click', () => {
+        const state = dataEngine.getState();
+        if (state.gameMode === 'play') {
+            showResolutionOverlay(true, "CHEAT: SKIPPED HOLE");
+        }
+    });
+
+    // ── Go to Locker cheat ──
+    document.getElementById('db-go-locker')?.addEventListener('click', () => {
+        showLockerRoom();
+    });
+
+    // ── Unlock Locker Shop cheat ──
+    document.getElementById('db-unlock-locker')?.addEventListener('click', () => {
+        const state = dataEngine.getState();
+        if (state.shopDraft.length === 0) {
+            dataEngine.generateShopDraft();
+        }
+        showLockerRoom();
     });
 }
