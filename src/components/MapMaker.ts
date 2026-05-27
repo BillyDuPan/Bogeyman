@@ -51,9 +51,10 @@ export function setupMapMaker(containerId: string) {
             <!-- Main Body -->
             <div style="display: flex; flex: 1; overflow: hidden;">
                 <!-- Tools Panel -->
-                <div style="width: 200px; background: #1a1a1a; border-right: 2px solid #444; padding: 10px; overflow-y: auto;">
+                <div style="width: 200px; background: #1a1a1a; border-right: 2px solid #444; padding: 10px; overflow-y: auto; display: flex; flex-direction: column;">
                     <div style="color: #aaa; margin-bottom: 10px;">TERRAIN TILES</div>
-                    <div id="mm-palette" style="display: flex; flex-direction: column; gap: 5px;"></div>
+                    <div id="mm-palette" style="display: flex; flex-direction: column; gap: 5px; flex: 1; overflow-y: auto;"></div>
+                    <button id="mm-btn-reset" style="margin-top: 10px; padding: 10px; background: #c0392b; color: #fff; border: none; border-bottom: 2px solid #922b21; cursor: pointer; font-family: var(--font-arcade);">RESET HOLE</button>
                 </div>
 
                 <!-- Canvas Area -->
@@ -112,8 +113,30 @@ export function setupMapMaker(containerId: string) {
     const canvasMount = document.getElementById('mm-canvas-mount') as HTMLDivElement;
     const exportBtn = document.getElementById('mm-btn-export') as HTMLButtonElement;
     const exportText = document.getElementById('mm-export-text') as HTMLTextAreaElement;
+    const previewText = document.getElementById('mm-preview-text') as HTMLTextAreaElement;
     const btnPrev = document.getElementById('mm-btn-prev') as HTMLButtonElement;
     const btnNext = document.getElementById('mm-btn-next') as HTMLButtonElement;
+    const btnReset = document.getElementById('mm-btn-reset') as HTMLButtonElement;
+
+    // Capture pristine maps for reset
+    const ORIGINAL_MAPS: Record<string, number[][]> = {};
+    TOURNAMENT_DATA.forEach((tour, tIdx) => {
+        tour.holes.forEach((hole, hIdx) => {
+            ORIGINAL_MAPS[`${tIdx}-${hIdx}`] = hole.map.map(r => [...r]);
+        });
+    });
+
+
+    let undoStack: string[] = [];
+
+    btnReset.addEventListener('click', () => {
+        const pristine = ORIGINAL_MAPS[`${currentTourIndex}-${currentHoleIndex}`];
+        if (pristine && !isTesting) {
+            undoStack.push(JSON.stringify(TOURNAMENT_DATA[currentTourIndex].holes[currentHoleIndex].map));
+            TOURNAMENT_DATA[currentTourIndex].holes[currentHoleIndex].map = pristine.map(r => [...r]);
+            updateASCII();
+        }
+    });
 
     // Tabs
     const tabInspector = document.getElementById('mm-tab-inspector') as HTMLButtonElement;
@@ -144,7 +167,6 @@ export function setupMapMaker(containerId: string) {
     const inpTourCash = document.getElementById('mm-inp-tour-cash') as HTMLInputElement;
     const inpHoleName = document.getElementById('mm-inp-hole-name') as HTMLInputElement;
     const inpHolePar = document.getElementById('mm-inp-hole-par') as HTMLInputElement;
-    const previewText = document.getElementById('mm-preview-text') as HTMLTextAreaElement;
 
     // Populate Tournament Select
     TOURNAMENT_DATA.forEach((tour, idx) => {
@@ -248,7 +270,11 @@ export function setupMapMaker(containerId: string) {
             swatch.style.width = '16px';
             swatch.style.height = '16px';
             swatch.style.background = tile.color;
-            swatch.style.border = '1px solid #000';
+            if (tile.id === 12) swatch.style.clipPath = 'polygon(0 0, 100% 0, 0 100%)';
+            else if (tile.id === 13) swatch.style.clipPath = 'polygon(0 0, 100% 0, 100% 100%)';
+            else if (tile.id === 14) swatch.style.clipPath = 'polygon(0 0, 100% 100%, 0 100%)';
+            else if (tile.id === 15) swatch.style.clipPath = 'polygon(100% 0, 100% 100%, 0 100%)';
+            else swatch.style.border = '1px solid #000';
 
             btn.appendChild(swatch);
             btn.appendChild(document.createTextNode(tile.name));
@@ -260,6 +286,17 @@ export function setupMapMaker(containerId: string) {
             paletteDiv.appendChild(btn);
         });
     };
+
+
+    const ghostTile = document.createElement('div');
+    ghostTile.style.position = 'absolute';
+    ghostTile.style.width = '32px';
+    ghostTile.style.height = '32px';
+    ghostTile.style.pointerEvents = 'none';
+    ghostTile.style.opacity = '0.5';
+    ghostTile.style.display = 'none';
+    ghostTile.style.zIndex = '1000';
+    overlay.appendChild(ghostTile);
 
     const paintCell = (e: MouseEvent) => {
         const rect = overlay.getBoundingClientRect();
@@ -275,14 +312,67 @@ export function setupMapMaker(containerId: string) {
     };
 
     overlay.addEventListener('mousedown', (e) => {
+        // Push state to undo stack before painting starts
+        const currentMap = TOURNAMENT_DATA[currentTourIndex].holes[currentHoleIndex].map;
+        undoStack.push(JSON.stringify(currentMap));
+        if (undoStack.length > 5) undoStack.shift();
+
         isDrawing = true;
         paintCell(e);
     });
+    
     overlay.addEventListener('mousemove', (e) => {
+        const rect = overlay.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const c = Math.floor(x / 32);
+        const r = Math.floor(y / 32);
+
+        if (r >= 0 && r < 12 && c >= 0 && c < 16) {
+            ghostTile.style.display = 'block';
+            ghostTile.style.left = `${c * 32}px`;
+            ghostTile.style.top = `${r * 32}px`;
+
+            const def = TERRAIN_DEFS[activeTileId];
+            ghostTile.style.background = def.color;
+            if (activeTileId === 12) ghostTile.style.clipPath = 'polygon(0 0, 100% 0, 0 100%)';
+            else if (activeTileId === 13) ghostTile.style.clipPath = 'polygon(0 0, 100% 0, 100% 100%)';
+            else if (activeTileId === 14) ghostTile.style.clipPath = 'polygon(0 0, 100% 100%, 0 100%)';
+            else if (activeTileId === 15) ghostTile.style.clipPath = 'polygon(100% 0, 100% 100%, 0 100%)';
+            else ghostTile.style.clipPath = 'none';
+        } else {
+            ghostTile.style.display = 'none';
+        }
+
         if (isDrawing) paintCell(e);
     });
+
+    overlay.addEventListener('mouseleave', () => {
+        ghostTile.style.display = 'none';
+    });
+    
     window.addEventListener('mouseup', () => {
         isDrawing = false;
+    });
+
+    window.addEventListener('keydown', (e) => {
+        // Undo (Z)
+        if ((e.key === 'z' || e.key === 'Z') && !isTesting) {
+            if (undoStack.length > 0) {
+                const lastState = JSON.parse(undoStack.pop()!);
+                TOURNAMENT_DATA[currentTourIndex].holes[currentHoleIndex].map = lastState;
+                updateASCII();
+            }
+        }
+        // Rotate (R)
+        if ((e.key === 'r' || e.key === 'R') && !isTesting) {
+            if (activeTileId >= 12 && activeTileId <= 15) {
+                activeTileId = activeTileId === 15 ? 12 : activeTileId + 1;
+                updatePalette();
+                // We update ghost tile clip path immediately by mocking a mouse move at the center
+                // but usually the mouse move listener will catch the next frame anyway.
+            }
+        }
     });
 
     // Export Panel
